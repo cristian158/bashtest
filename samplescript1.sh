@@ -22,6 +22,6 @@ cd Matcha-gtk-theme
 ./install.sh -c dark -t sea
 cd..
 
-git clone https://github.com/vinceliuice/
+git clone https://github.com/vinceliuice/Qogir-icon-theme 
 cd Qogir-icon-theme
 ./ install .sh
