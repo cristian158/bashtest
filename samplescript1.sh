@@ -5,7 +5,7 @@ sudo pacman -S go
 
 git clone https://aur.archlinux.org/yay.git
 cd yay
-makpkg
+makepkg
 sudo pacman -U yay-10.3.0-1-x86_64.pkg.tar.zst
 
 sudo pacman -S ardour audacious clamtk
