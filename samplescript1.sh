@@ -4,6 +4,7 @@ read -p "Want pacman-mirrors? Y/N " ANSWER
 case "$ANSWER" in
  [yY] | [yY][eE][sS])
    sudo pacman-mirrors --fasttrack
+   echo 'MIRRORLIST DONE'
    ;;
  [nN] | [nN][oO])
    echo '=================SKIPPING===================='
@@ -20,7 +21,7 @@ case "$ANSWER" in
  [yY] | [yY][eE][sS])
    sudo pacman -Syu
    echo "FULL UPDATE DONE"
-   echo '====================================='
+   echo '============================================='
    ;;
  [nN] | [nN][oO])
    echo '=================SKIPPING===================='
@@ -30,12 +31,12 @@ case "$ANSWER" in
    ;;
 esac
 
-read -p "Want base-devel? Y/N " ANSWER
+read -p "Want base-devel? (250M) Y/N " ANSWER
 case "$ANSWER" in
  [yY] | [yY][eE][sS])
    sudo pacman -S base-devel
    echo "base-devel DONE"
-   echo '====================================='
+   echo '============================================='
    ;;
  [nN] | [nN][oO])
    echo '=================SKIPPING===================='
@@ -47,7 +48,7 @@ esac
 
 
 #yay
-read -p "Want yay? Y/N " ANSWER
+read -p "Want yay? (8M) Y/N " ANSWER
 case "$ANSWER" in
  [yY] | [yY][eE][sS])
    git clone https://aur.archlinux.org/yay.git
@@ -55,7 +56,7 @@ case "$ANSWER" in
    makepkg -si
    sudo pacman -U yay-10.3.0-1-x86_64.pkg.tar.zst
    echo "YAY INSTALL DONE"
-   echo '====================================='
+   echo '============================================='
    ;;
  [nN] | [nN][oO])
    echo '=================SKIPPING===================='
@@ -67,12 +68,12 @@ esac
 
 
 #softwari
-read -p "Want ardour/audacious/clamtk? Y/N" ANSWER
+read -p "Want ardour/audacious/clamtk? (80M) Y/N " ANSWER
 case "$ANSWER" in
   [yY] | [yY][eE][sS])
     sudo pacman -S ardour audacious clamtk
     echo "SOFTWARE 1/6 DONE"
-    echo '====================================='
+    echo '============================================='
     ;;
   [nN] | [nN][oO])
    echo '=================SKIPPING===================='
@@ -82,12 +83,12 @@ case "$ANSWER" in
    ;;
 esac
 
-read -p "Want atom? (107M) Y/N" ANSWER
+read -p "Want atom? (107M) Y/N " ANSWER
 case "$ANSWER" in
   [yY] | [yY][eE][sS])
     sudo pacman -S atom
     echo "SOFTWARE 2/6 DONE"
-    echo '====================================='
+    echo '============================================='
     ;;
   [nN] | [nN][oO])
     echo '=================SKIPPING===================='
@@ -97,12 +98,12 @@ case "$ANSWER" in
     ;;
 esac
 
-read -p "Want audacity/firefox/kdenlive? (216M) Y/N" ANSWER
+read -p "Want audacity/firefox/kdenlive? (216M) Y/N " ANSWER
 case "$ANSWER" in
   [yY] | [yY][eE][sS])
     sudo pacman -S audacity firefox kdenlive
     echo "SOFTWARE 3/6 DONE"
-    echo '====================================='
+    echo '============================================='
     ;;
   [nN] | [nN][oO])
     echo '=================SKIPPING===================='
@@ -112,12 +113,12 @@ case "$ANSWER" in
     ;;
 esac
 
-read -p "Want mgba/musescore/nicotine? (43M) Y/N" ANSWER
+read -p "Want mgba/musescore/nicotine? (43M) Y/N " ANSWER
 case "$ANSWER" in
   [yY] | [yY][eE][sS])
     sudo pacman -S mgba-qt musescore nicotine+
     echo "SOFTWARE 4/6 DONE"
-    echo '====================================='
+    echo '============================================='
     ;;
   [nN] | [nN][oO])
     echo '=================SKIPPING===================='
@@ -127,12 +128,12 @@ case "$ANSWER" in
     ;;
 esac
 
-read -p "Want qbittorrent/redshift/spotifyd/virtualbox/vlc? (68M) Y/N" ANSWER
+read -p "Want qbittorrent/redshift/spotifyd/virtualbox/vlc? (68M) Y/N " ANSWER
 case "$ANSWER" in
   [yY] | [yY][eE][sS])
     sudo pacman -S qbittorrent redshift spotifyd virtualbox vlc
     echo "SOFTWARE 5/6 DONE"
-    echo '====================================='
+    echo '============================================='
     ;;
   [nN] | [nN][oO])
     echo '=================SKIPPING===================='
@@ -142,12 +143,12 @@ case "$ANSWER" in
     ;;
 esac
 
-read -p "Want auto-cpufreq/bitwarden/fastfetch/stacer/timeshift? Y/N" ANSWER
+read -p "Want auto-cpufreq/bitwarden/fastfetch-git/stacer/timeshift? (100M) Y/N " ANSWER
 case "$ANSWER" in
   [yY] | [yY][eE][sS])
-    yay -S auto-cpufreq bitwarden fastfetch stacer timeshift
+    yay -S auto-cpufreq bitwarden fastfetch-git stacer timeshift
     echo "SOFTWARE 6/6 DONE"
-    echo '====================================='
+    echo '============================================='
     ;;
   [nN] | [nN][oO])
     echo '=================SKIPPING===================='
@@ -157,12 +158,12 @@ case "$ANSWER" in
     ;;
 esac
 
-read -p "Want gtk engines? (1M) Y/N" ANSWER
+read -p "Want gtk engines? (1M) Y/N " ANSWER
 case "$ANSWER" in
   [yY] | [yY][eE][sS])
     sudo pacman -S gtk-engine-murrine gtk-engines
     echo "GTK ENGINES DONE"
-    echo '====================================='
+    echo '============================================='
     ;;
   [nN] | [nN][oO])
     echo '=================SKIPPING===================='
@@ -174,7 +175,7 @@ esac
 
 #themes icons
 
-read -p "Want Matcha theme? (12M) Y/N" ANSWER
+read -p "Want Matcha theme? (12M) Y/N " ANSWER
 case "$ANSWER" in
   [yY] | [yY][eE][sS])
     git clone https://github.com/vinceliuice/Matcha-gtk-theme
@@ -182,6 +183,7 @@ case "$ANSWER" in
     ./install.sh -c dark -t sea
     cd ..
     echo "GTK THEME DONE"
+    echo '============================================='
     ;;
   [nN] | [nN][oO])
     echo '=================SKIPPING===================='
@@ -191,13 +193,14 @@ case "$ANSWER" in
     ;;
 esac
 
-read -p "Want Icons? (14M) Y/N" ANSWER
+read -p "Want Icons? (14M) Y/N " ANSWER
 case "$ANSWER" in
   [yY] | [yY][eE][sS])
     git clone https://github.com/vinceliuice/Qogir-icon-theme
     cd Qogir-icon-theme
     ./install.sh
     echo "ICONS DONE"
+    echo '============================================='
     ;;
   [nN] | [nN][oO])
     echo '=================SKIPPING===================='
