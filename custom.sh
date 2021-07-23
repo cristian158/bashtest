@@ -75,10 +75,10 @@ confirm 'mgba/musescore/nicotine? (43M)' '-S mgba-qt musescore nicotine+' 'SOFTW
 confirm 'qbittorrent/redshift/spotifyd/virtualbox/vlc? (68M)' '-S qbittorrent redshift spotifyd virtualbox vlc' 'SOFTWARE 5/6'
 
 while true; do
-	read -p "Want auto-cpufreq/bitwarden/fastfetch-git/stacer/timeshift? (100M) Y/N " ANSWER
+	read -p "Want auto-cpufreq/bitwarden/fastfetch-git/stacer/timeshift/ifconfig? (102M) Y/N " ANSWER
 	case $ANSWER in
 	 [yY] | [yY][eE][sS])
-	   yay -S auto-cpufreq bitwarden fastfetch-git stacer timeshift
+	   yay -S auto-cpufreq bitwarden fastfetch-git stacer timeshift ifconfig
 	   echo "SOFTWARE 6/6 DONE"
 	   echo '============================================='
 	   break
