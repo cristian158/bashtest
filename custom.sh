@@ -71,7 +71,7 @@ done
 confirm 'ardour/audacious/clamtk? (80M)' '-S ardour audacious clamtk' 'SOFTWARE 1/6'
 confirm 'atom (107M)' '-S atom' 'SOFTWARE 2/6'
 confirm 'audacity/firefox/kdenlive? (216M)' '-S audacity firefox kdenlive' 'SOFTWARE 3/6'
-confirm 'mgba/musescore/nicotine? (43M)' '-S mgba-qt musescore nicotine+' 'SOFTWARE 4/6'
+confirm 'mgba/musescore/nicotine/gthumb? (52M)' '-S mgba-qt musescore nicotine+ gthumb' 'SOFTWARE 4/6'
 confirm 'qbittorrent/redshift/spotifyd/virtualbox/vlc? (68M)' '-S qbittorrent redshift spotifyd virtualbox vlc' 'SOFTWARE 5/6'
 
 while true; do
