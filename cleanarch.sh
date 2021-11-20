@@ -19,6 +19,25 @@ confirm () {
 	done
 }
 
+yayit () {
+	while true; do
+		read -p "Do u want $1? Y/N " ANSWER
+		case $ANSWER in
+		 [yY] | [yY][eE][sS])
+		   yay $2
+		   echo $3 DONE
+		   break
+		   ;;
+		 [nN] | [nN][oO])
+		   echo '=================SKIPPING===================='
+		   break
+		   ;;
+		 *)
+		   echo 'Please enter y/yes or n/no' >&2
+		esac
+	done
+}
+
 buildit () {
 	while true; do
 		read -p "Do u want $1? Y/N " ANSWER
@@ -72,7 +91,8 @@ confirm 'ardour/audacious/clamtk? (80M)' '-S ardour audacious clamtk' 'SOFTWARE 
 confirm 'atom (107M)' '-S atom' 'SOFTWARE 2/6'
 confirm 'audacity/firefox/kdenlive? (216M)' '-S audacity firefox kdenlive' 'SOFTWARE 3/6'
 confirm 'mgba/musescore/nicotine/gthumb? (52M)' '-S mgba-qt musescore nicotine+ gthumb' 'SOFTWARE 4/6'
-confirm 'qbittorrent/redshift/spotifyd/virtualbox/vlc? (68M)' '-S qbittorrent redshift spotifyd virtualbox vlc' 'SOFTWARE 5/6'
+confirm 'qbittorrent/spotifyd/virtualbox/vlc? (68M)' '-S qbittorrent spotifyd virtualbox vlc' 'SOFTWARE 5/6'
+yayit 'gammy?' 'gammy' 'EXTRA'
 
 while true; do
 	read -p "Want auto-cpufreq/bitwarden/fastfetch-git/stacer/timeshift/ifconfig? (102M) Y/N " ANSWER
