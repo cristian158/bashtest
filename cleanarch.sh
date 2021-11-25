@@ -92,7 +92,7 @@ confirm 'atom (107M)' '-S atom' 'SOFTWARE 2/6'
 confirm 'audacity/firefox/kdenlive? (216M)' '-S audacity firefox kdenlive' 'SOFTWARE 3/6'
 confirm 'mgba/musescore/nicotine/gthumb? (52M)' '-S mgba-qt musescore nicotine+ gthumb' 'SOFTWARE 4/6'
 confirm 'qbittorrent/spotifyd/virtualbox/vlc? (68M)' '-S qbittorrent spotifyd virtualbox vlc' 'SOFTWARE 5/6'
-yayit 'gammy?' 'gammy' 'EXTRA'
+yayit 'gammy/bat(rust cat)?' 'gammy bat' 'EXTRA'
 
 while true; do
 	read -p "Want auto-cpufreq/bitwarden/fastfetch-git/stacer/timeshift/ifconfig? (102M) Y/N " ANSWER
