@@ -1,8 +1,8 @@
-#! usr/bin/bash
+#! usr/bin/zsh
 
 confirm () {
 	while true; do
-		read -p "Do u want $1? Y/N " ANSWER
+		read -p "Do u want $1 Y/N " ANSWER
 		case $ANSWER in
 		 [yY] | [yY][eE][sS])
 		   sudo pacman $2
@@ -21,7 +21,7 @@ confirm () {
 
 yayit () {
 	while true; do
-		read -p "Do u want $1? Y/N " ANSWER
+		read -p "Do u want $1 Y/N " ANSWER
 		case $ANSWER in
 		 [yY] | [yY][eE][sS])
 		   yay $2
@@ -40,7 +40,7 @@ yayit () {
 
 buildit () {
 	while true; do
-		read -p "Do u want $1? Y/N " ANSWER
+		read -p "Do u want $1 Y/N " ANSWER
 		case $ANSWER in
 		 [yY] | [yY][eE][sS])
 		   git clone $2
@@ -88,29 +88,15 @@ while true; do
 done
 
 confirm 'ardour/audacious/clamtk? (80M)' '-S ardour audacious clamtk' 'SOFTWARE 1/6'
-confirm 'atom (107M)' '-S atom' 'SOFTWARE 2/6'
+confirm 'atom? (107M)' '-S atom' 'SOFTWARE 2/6'
 confirm 'audacity/firefox/kdenlive? (216M)' '-S audacity firefox kdenlive' 'SOFTWARE 3/6'
 confirm 'mgba/musescore/nicotine/gthumb? (52M)' '-S mgba-qt musescore nicotine+ gthumb' 'SOFTWARE 4/6'
-confirm 'qbittorrent/spotifyd/virtualbox/vlc? (68M)' '-S qbittorrent spotifyd virtualbox vlc' 'SOFTWARE 5/6'
-yayit 'gammy/bat(rust cat)?' 'gammy bat' 'EXTRA'
+confirm 'qbittorrent/virtualbox/vlc? (68M)' '-S qbittorrent virtualbox vlc' 'SOFTWARE 5/6'
+yayit 'gammy/bat(rust cat)?' '-S gammy bat' 'EXTRA1'
+confirm 'mlocate? (1M)' '-S mlocate' 'EXTRA2'
 
-while true; do
-	read -p "Want auto-cpufreq/bitwarden/fastfetch-git/stacer/timeshift/ifconfig? (102M) Y/N " ANSWER
-	case $ANSWER in
-	 [yY] | [yY][eE][sS])
-	   yay -S auto-cpufreq bitwarden fastfetch-git stacer timeshift ifconfig
-	   echo "SOFTWARE 6/6 DONE"
-	   echo '============================================='
-	   break
-	   ;;
-	 [nN] | [nN][oO])
-	   echo '=================SKIPPING===================='
-	   break
-	   ;;
-	 *)
-	   echo "Nigga Please" >&2
-	esac
-done
+yayit 'auto-cpufreq/bitwarden/fastfetch-git/stacer/timeshift/ifconfig? (102M)' '-S auto-cpufreq bitwardeni fastfetch-git stacer timeshift ifconfig' 'EXTRA3'
+
 
 confirm 'gtk engines' '-S gtk-engine-murrine gtk-engines' 'GTK ENGINES'
 buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea'
