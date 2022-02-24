@@ -121,6 +121,8 @@ sleep 1
 confirm 'Full Update' -Syu 'FULL UPDATE'
 confirm 'base-devel (250M)' '-S base-devel' 'BASE DEVEL'
 
+getyay
+
 confirm 'ardour/audacious/clamtk? (80M)' '-S ardour audacious clamtk' 'SOFTWARE 1/6'
 confirm 'atom? (107M)' '-S atom' 'SOFTWARE 2/6'
 confirm 'audacity/firefox/kdenlive? (216M)' '-S audacity firefox kdenlive' 'SOFTWARE 3/6'
