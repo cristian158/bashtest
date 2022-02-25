@@ -143,3 +143,4 @@ echo Installation Finished
 ####
 # Add
 # lxappearance
+# ly display manager
