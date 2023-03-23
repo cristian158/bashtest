@@ -54,7 +54,7 @@ getyay () {
  	   git clone https://aur.archlinux.org/yay.git
  	   cd yay
  	   makepkg -si
- 	   sudo pacman -U yay-11.1.2-1-x86_64.pkg.tar.zst
+ 	   sudo pacman -U yay-11.3.2-1-x86_64.pkg.tar.zst
  	   echo "YAY INSTALL DONE"
  	   echo '============================================='
  	   break
