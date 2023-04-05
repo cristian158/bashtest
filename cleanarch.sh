@@ -17,7 +17,7 @@
 ###          on a clean arch installation
 ###
 ###########################
- ///////////////////////////
+#///////////////////////////
 
 
 
@@ -114,7 +114,11 @@ buildit () {
 }
 
 
+
+##################################
 ## Beginning of th actual script 
+#
+
 
 echo Welcome to the Installation
 sleep 1
@@ -134,9 +138,9 @@ confirm 'mlocate? (1M)' '-S mlocate' 'EXTRA2'
 yayit 'auto-cpufreq/bitwarden/fastfetch-git/stacer/timeshift/ifconfig? (102M)' '-S auto-cpufreq bitwardeni fastfetch-git stacer timeshift ifconfig' 'EXTRA3'
 yayit 'pulsemixer/flameshot/dvtm?' '-S pulsemixer flameshot dvtm'
 
-confirm 'gtk engines' '-S gtk-engine-murrine gtk-engines' 'GTK ENGINES'
-buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea'
-buildit Icons https://github.com/vinceliuice/Qogir-icon-theme Qogir-icon-theme
+# confirm 'gtk engines' '-S gtk-engine-murrine gtk-engines' 'GTK ENGINES'
+# buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea'
+# buildit Icons https://github.com/vinceliuice/Qogir-icon-theme Qogir-icon-theme
 
 echo Installation Finished
 
@@ -147,3 +151,17 @@ echo Installation Finished
 # xbacklight
 # rsync
 # ufw
+# lsd
+# mediainfo
+# xdg-open
+# arecord
+# btop
+# udisksctl
+# fsatfetch
+# pulsemixer (or pipeware?)
+# nvim
+# git
+#
+#
+# #### get zsh as default 
+# #### mpd & ncmpcpp script
