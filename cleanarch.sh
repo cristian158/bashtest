@@ -28,7 +28,7 @@
 # Confirm installation of Packages group via pacman
 confirm () {
 	while true; do
-		read -p "Do u want $1 Y/N " ANSWER
+		read -p ":: Do u want $1 Y/N " ANSWER
 		case $ANSWER in
 		 [yY] | [yY][eE][sS])
 		   sudo pacman $2
@@ -48,7 +48,7 @@ confirm () {
 # Function to install yay
 getyay () {
  while true; do
- 	read -p "Want yay? (8M) Y/N " ANSWER
+ 	read -p ":: Want yay? (8M) Y/N " ANSWER
  	case $ANSWER in
  	 [yY] | [yY][eE][sS])
  	   git clone https://aur.archlinux.org/yay.git
@@ -72,7 +72,7 @@ getyay () {
 # Function to install shit with yay
 yayit () {
 	while true; do
-		read -p "Do u want $1 Y/N " ANSWER
+		read -p ":: Do u want $1 Y/N " ANSWER
 		case $ANSWER in
 		 [yY] | [yY][eE][sS])
 		   yay $2
@@ -114,6 +114,28 @@ buildit () {
 }
 
 
+# Function to install zsh shit
+zshit () {
+	while true; do
+		read -p "Do u want powerlevel10k? Y/N " ANSWER
+		case $ANSWER in
+		 [yY] | [yY][eE][sS])
+		  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.files/powerlevel10k
+		  echo 'source ~/.files/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
+		  echo "ZSHit DONE"
+		  echo '============================================='
+		  break
+		  ;;
+	  	 [nN] | [nN][oO])
+		  echo '=================SKIPPING===================='
+		  break
+		  ;;
+		 *)
+		  echo 'Nigga Please' >&2
+		esac
+	done
+}
+
 
 ##################################
 ## Beginning of th actual script 
@@ -123,20 +145,23 @@ buildit () {
 echo Welcome to the Installation
 sleep 1
 confirm 'Full Update' -Syu 'FULL UPDATE'
-confirm 'base-devel (250M)' '-S base-devel' 'BASE DEVEL'
+confirm 'base-devel' '-S base-devel' 'BASE DEVEL'
 
 getyay
 
-confirm 'ardour/audacious/clamtk? (80M)' '-S ardour audacious clamtk' 'SOFTWARE 1/6'
-confirm 'atom? (107M)' '-S atom' 'SOFTWARE 2/6'
-confirm 'audacity/firefox/kdenlive? (216M)' '-S audacity firefox kdenlive' 'SOFTWARE 3/6'
-confirm 'mgba/musescore/nicotine/gthumb? (52M)' '-S mgba-qt musescore nicotine+ gthumb' 'SOFTWARE 4/6'
-confirm 'qbittorrent/virtualbox/vlc? (68M)' '-S qbittorrent virtualbox vlc' 'SOFTWARE 5/6'
+confirm 'git/udisks2/mediainfo/xdg-utils/btop/alsa-utils/lsd' '-S git udisks2 mediainfo xdg-utils btop alsa-utils lsd' 'SOFTWARE 1/6'
+confirm 'firefox/kdenlive?' '-S firefox kdenlive' 'SOFTWARE 2/6'
+confirm 'musescore/nicotine?' '-S musescore nicotine+' 'SOFTWARE 3/6'
+confirm 'qbittorrent/vlc?' '-S qbittorrent vlc' 'SOFTWARE 4/6'
+confirm 'mlocate? (1M)' '-S mlocate' 'SOFTWARE 4/6'
+yayit 'auto-cpufreq/bitwarden/fastfetch/stacer/timeshift? (102M)' '-S auto-cpufreq bitwarden fastfetch stacer timeshift' 'SOFTWARE 5/6'
+yayit 'pulsemixer/flameshot/dvtm?' '-S pulsemixer flameshot dvtm' 'SOFTWARE 6/6'
+yayit 'zsh-autosuggestions/zsh-syntax-highlighting?' '-S zsh-autosuggestions zsh-syntax-highlighting' 'zsh shit'
 
-yayit 'gammy/bat(rust cat)?' '-S gammy bat' 'EXTRA1'
-confirm 'mlocate? (1M)' '-S mlocate' 'EXTRA2'
-yayit 'auto-cpufreq/bitwarden/fastfetch-git/stacer/timeshift/ifconfig? (102M)' '-S auto-cpufreq bitwardeni fastfetch-git stacer timeshift ifconfig' 'EXTRA3'
-yayit 'pulsemixer/flameshot/dvtm?' '-S pulsemixer flameshot dvtm'
+# git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
+# echo 'source ~/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
+
+zshit
 
 # confirm 'gtk engines' '-S gtk-engine-murrine gtk-engines' 'GTK ENGINES'
 # buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea'
@@ -144,11 +169,8 @@ yayit 'pulsemixer/flameshot/dvtm?' '-S pulsemixer flameshot dvtm'
 
 echo Installation Finished
 
-####
-# Add
-# lxappearance
-# ly display manager
-# xbacklight
+######
+## Add
 # rsync
 # ufw
 # lsd
@@ -157,11 +179,13 @@ echo Installation Finished
 # arecord
 # btop
 # udisksctl
-# fsatfetch
+# fastfetch
 # pulsemixer (or pipeware?)
-# nvim
 # git
-#
+# nvim
+# lxappearance
+# ly display manager
+# xbacklight
 #
 # #### get zsh as default 
 # #### mpd & ncmpcpp script
