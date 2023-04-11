@@ -138,9 +138,8 @@ zshit () {
 
 
 ##################################
-## Beginning of th actual script 
-#
-
+## Beginning of the actual script 
+##
 
 echo Welcome to the Installation
 sleep 1
@@ -149,7 +148,7 @@ confirm 'base-devel' '-S base-devel' 'BASE DEVEL'
 
 getyay
 
-confirm 'udisks2/mediainfo/xdg-utils/btop/alsa-utils/lsd/mlocate/alacritty' '-S udisks2 mediainfo xdg-utils btop alsa-utils lsd mlocate alacritty' 'SOFTWARE 1/6'
+confirm 'udisks2/mediainfo/xdg-utils/btop/alsa-utils/lsd/mlocate/alacritty/iosevka-fonts/picom' '-S udisks2 mediainfo xdg-utils btop alsa-utils lsd mlocate alacritty ttc-iosevka picom' 'SOFTWARE 1/6'
 confirm 'firefox?' '-S firefox' 'SOFTWARE 2/6'
 confirm 'musescore/nicotine?' '-S musescore nicotine+' 'SOFTWARE 3/6'
 confirm 'qbittorrent/vlc?' '-S qbittorrent vlc' 'SOFTWARE 4/6'
@@ -165,6 +164,11 @@ zshit
 # confirm 'gtk engines' '-S gtk-engine-murrine gtk-engines' 'GTK ENGINES'
 # buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea'
 # buildit Icons https://github.com/vinceliuice/Qogir-icon-theme Qogir-icon-theme
+
+## REMOVE LIGHTDM
+# yay -Rsn lightdm-gtk-greeter
+# yay -Rsn lightdm
+
 
 echo Installation Finished
 
