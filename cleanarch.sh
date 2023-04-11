@@ -149,11 +149,10 @@ confirm 'base-devel' '-S base-devel' 'BASE DEVEL'
 
 getyay
 
-confirm 'git/udisks2/mediainfo/xdg-utils/btop/alsa-utils/lsd' '-S git udisks2 mediainfo xdg-utils btop alsa-utils lsd' 'SOFTWARE 1/6'
-confirm 'firefox/kdenlive?' '-S firefox kdenlive' 'SOFTWARE 2/6'
+confirm 'udisks2/mediainfo/xdg-utils/btop/alsa-utils/lsd/mlocate/alacritty' '-S udisks2 mediainfo xdg-utils btop alsa-utils lsd mlocate alacritty' 'SOFTWARE 1/6'
+confirm 'firefox?' '-S firefox' 'SOFTWARE 2/6'
 confirm 'musescore/nicotine?' '-S musescore nicotine+' 'SOFTWARE 3/6'
 confirm 'qbittorrent/vlc?' '-S qbittorrent vlc' 'SOFTWARE 4/6'
-confirm 'mlocate? (1M)' '-S mlocate' 'SOFTWARE 4/6'
 yayit 'auto-cpufreq/bitwarden/fastfetch/stacer/timeshift? (102M)' '-S auto-cpufreq bitwarden fastfetch stacer timeshift' 'SOFTWARE 5/6'
 yayit 'pulsemixer/flameshot/dvtm?' '-S pulsemixer flameshot dvtm' 'SOFTWARE 6/6'
 yayit 'zsh-autosuggestions/zsh-syntax-highlighting?' '-S zsh-autosuggestions zsh-syntax-highlighting' 'zsh shit'
@@ -187,5 +186,7 @@ echo Installation Finished
 # ly display manager
 # xbacklight
 #
+#
+# kdenlive
 # #### get zsh as default 
 # #### mpd & ncmpcpp script
