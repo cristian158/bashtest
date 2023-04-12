@@ -148,7 +148,7 @@ confirm 'base-devel' '-S base-devel' 'BASE DEVEL'
 
 getyay
 
-confirm 'udisks2/mediainfo/xdg-utils/btop/alsa-utils/lsd/mlocate/alacritty/iosevka-fonts/picom' '-S udisks2 mediainfo xdg-utils btop alsa-utils lsd mlocate alacritty ttc-iosevka picom' 'SOFTWARE 1/6'
+confirm 'udisks2/mediainfo/btop/alsa-utils/lsd/alacritty/iosevka-fonts/picom' '-S udisks2 mediainfo btop alsa-utils lsd alacritty ttc-iosevka picom' 'SOFTWARE 1/6'
 confirm 'firefox?' '-S firefox' 'SOFTWARE 2/6'
 confirm 'musescore/nicotine?' '-S musescore nicotine+' 'SOFTWARE 3/6'
 confirm 'qbittorrent/vlc?' '-S qbittorrent vlc' 'SOFTWARE 4/6'
