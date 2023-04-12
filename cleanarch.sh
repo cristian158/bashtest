@@ -176,15 +176,8 @@ echo Installation Finished
 ## Add
 # rsync
 # ufw
-# lsd
 # mediainfo
-# xdg-open
-# arecord
-# btop
-# udisksctl
-# fastfetch
 # pulsemixer (or pipeware?)
-# git
 # nvim
 # lxappearance
 # ly display manager
