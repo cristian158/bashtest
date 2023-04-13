@@ -224,7 +224,7 @@ rm -rf yay
 echo yay folder removed
 
 confirm 'udisks2/mediainfo/xdg-utils/btop/alsa-utils/lsd/mlocate/alacritty/iosevka-fonts/picom' 'udisks2 mediainfo xdg-utils btop alsa-utils lsd mlocate alacritty ttc-iosevka picom'
-yayit 'zsh-autosuggestions/zsh-syntax-highlighting?' 'zsh-autosuggestions zsh-syntax-highlighting'
+yayit 'zsh-autosuggestions/zsh-syntax-highlighting/polybar?' 'zsh-autosuggestions zsh-syntax-highlighting polybar'
 confirm 'musescore/nicotine?' 'musescore nicotine+'
 confirm 'qbittorrent/vlc?' 'qbittorrent vlc'
 yayit 'auto-cpufreq/bitwarden/fastfetch/stacer/timeshift?' 'auto-cpufreq bitwarden fastfetch stacer timeshift'
