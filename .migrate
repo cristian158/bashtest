@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+## Script to migrate home git bare repository to new system
+#
+
+## Commit alias config to .bashrc
+echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'" >> $HOME/.bashrc
+
+## Source repository to ignore the folder where to clone
+echo ".cfg" >> .gitignore
+
+## Clone dotfiles into bare repository @ home
+git clone --bare https://github.com/cristian158/spweedy $HOME/.cfg
+
+## Define alias in current shell scope
+alias config='/usr/bin/git --git-dir=#HOME/.cfg/ --work-tree=$HOME'
+
+## Checkout actual content from the bare repository to home
+config checkout
+
+### If previous step fails with untracked working tree files might be because
+### home folder has stock config files which would be overwritten by Git
+### One solution: back up with
+# mkdir -p .config-backup && \
+# config checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | \
+# xargs -I{} mv {} .config-backup/{}
+#
+### Another solution: delete conflicting files
+#
+### rerun checkout
+# config checkout
+
+## set flag for untracked files
+config config --local status.showUntrackedFiles no
