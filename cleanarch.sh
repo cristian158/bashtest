@@ -26,6 +26,7 @@
 #
 
 # Confirm installation of Packages group via pacman
+#confirm 'Full Update' -yu 'FULL UPDATE'
 
 confirm () {
 	while true; do
@@ -77,13 +78,14 @@ gitcfg () {
 
 getyay () {
 	while true; do
-		read -p ":: Want yay? (8M) Y/N " ANSWER
+		read -p ":: Want yay? Y/N " ANSWER
 		case $ANSWER in
 			[yY] | [yY][eE][sS])
+				echo Cloning yay
 				git clone https://aur.archlinux.org/yay.git
 				cd yay
 				makepkg -si
-				sudo pacman -U yay-11.3.2-1-x86_64.pkg.tar.zst
+				sudo pacman -U yay-12.0.4-1-x86_64.pkg.tar.zst
 				echo YAY INSTALL DONE
 				echo '============================================='
 				sleep 1
@@ -213,15 +215,21 @@ ldm-remove () {
 
 echo Welcome to CASH 
 sleep 1
-confirm 'Full Update' -Syu 'FULL UPDATE'
+confirm 'Full Update' -yu 'FULL UPDATE'
+
+sleep 1
 
 gitcfg
+
+#sleep 1
 
 getyay
 
 echo Removing yay folder
 rm -rf yay
 echo yay folder removed
+
+cd ..
 
 confirm 'udisks2/mediainfo/xdg-utils/btop/alsa-utils/lsd/mlocate/alacritty/iosevka-fonts/picom' 'udisks2 mediainfo xdg-utils btop alsa-utils lsd mlocate alacritty ttc-iosevka picom'
 yayit 'zsh-autosuggestions/zsh-syntax-highlighting/polybar?' 'zsh-autosuggestions zsh-syntax-highlighting polybar'
@@ -234,6 +242,41 @@ confirm 'firefox?' 'firefox'
 zsh-it
 
 ldm-remove
+
+
+
+## MIGRATION
+#
+#
+
+echo :: Commiting alias config to .bashrc
+sleep 1
+
+echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg --work-tree=$HOME'" >> $HOME/.bashrc
+
+echo :: Source repository to ignore the folder where to clone
+
+echo ".cfg" >> .gitignore
+
+sleep 1
+
+echo :: Cloning dotdiles into bare repository @ home
+
+git clone --bare https://github.com/cristian158/spweedy $HOME/.cfg
+
+sleep 1
+
+echo :: Defining alias in current shell scope
+
+alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+
+sleep 1 
+
+echo :: Checkout actual content from the bare repository to home
+
+config checkout
+
+
 
 echo CASH Finished
 
