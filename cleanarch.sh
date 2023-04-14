@@ -81,11 +81,15 @@ getyay () {
 		read -p ":: Want yay? Y/N " ANSWER
 		case $ANSWER in
 			[yY] | [yY][eE][sS])
-				echo Cloning yay
+				echo :: Cloning yay
 				git clone https://aur.archlinux.org/yay.git
 				cd yay
 				makepkg -si
 				sudo pacman -U yay-12.0.4-1-x86_64.pkg.tar.zst
+				cd
+				echo :: Removing yay folder
+				rm -rf ~/bashtest/yay
+				echo :: yay folder removed
 				echo YAY INSTALL DONE
 				echo '============================================='
 				sleep 1
@@ -215,71 +219,57 @@ ldm-remove () {
 
 echo Welcome to CASH 
 sleep 1
-confirm 'Full Update' -yu 'FULL UPDATE'
 
-sleep 1
+confirm 'Full Update' -yu 'FULL UPDATE'
 
 gitcfg
 
-sleep 1
-
 getyay
 
-echo Removing yay folder
-rm -rf yay
-echo yay folder removed
-
-cd ..
-
-confirm 'udisks2/mediainfo/xdg-utils/btop/alsa-utils/lsd/mlocate/alacritty/iosevka-fonts/picom' 'udisks2 mediainfo xdg-utils btop alsa-utils lsd mlocate alacritty ttc-iosevka picom'
+confirm 'udisks2/mediainfo/xdg-utils/btop/alsa-utils/lsd/mlocate/alacritty/iosevka-fonts' 'udisks2 mediainfo xdg-utils btop alsa-utils lsd mlocate alacritty ttc-iosevka '
+confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
 yayit 'zsh-autosuggestions/zsh-syntax-highlighting/polybar?' 'zsh-autosuggestions zsh-syntax-highlighting polybar'
+yayit 'auto-cpufreq/fastfetch?' 'auto-cpufreq fastfetch'
+yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
+
+yayit 'bitwarden/stacer/timeshift?' 'bitwarden stacer timeshift'
+confirm 'firefox?' 'firefox'
 confirm 'musescore/nicotine?' 'musescore nicotine+'
 confirm 'qbittorrent/vlc?' 'qbittorrent vlc'
-yayit 'auto-cpufreq/bitwarden/fastfetch/stacer/timeshift?' 'auto-cpufreq bitwarden fastfetch stacer timeshift'
-yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
-confirm 'firefox?' 'firefox'
 
 zsh-it
 
 ldm-remove
 
 
-
+##############
 ## MIGRATION
 #
-#
 
-echo :: Commiting alias config to .bashrc
+echo :: STARTING MIGRATION
 sleep 1
 
+echo :: Commiting alias config to .bashrc
 echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg --work-tree=$HOME'" >> $HOME/.bashrc
+sleep 1
 
 echo :: Source repository to ignore the folder where to clone
-
 echo ".cfg" >> .gitignore
-
 sleep 1
 
 echo :: Cloning dotdiles into bare repository @ home
-
 git clone --bare https://github.com/cristian158/spweedy $HOME/.cfg
-
 sleep 1
 
 echo :: Defining alias in current shell scope
-
 alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
-
 sleep 1 
 
 echo :: Checkout actual content from the bare repository to home
-
 config checkout
 
 read -p "Which files wanna delete? " AnS
-
-echo Deleting $Ans
-
+echo :: Deleting $Ans
 rm $Ans
 
 
