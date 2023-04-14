@@ -221,7 +221,7 @@ sleep 1
 
 gitcfg
 
-#sleep 1
+sleep 1
 
 getyay
 
