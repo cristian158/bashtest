@@ -85,7 +85,6 @@ getyay () {
 				git clone https://aur.archlinux.org/yay.git
 				cd yay
 				makepkg -si
-				sudo pacman -U yay-12.0.4-1-x86_64.pkg.tar.zst
 				cd
 				echo :: Removing yay folder
 				rm -rf ~/bashtest/yay
@@ -226,7 +225,8 @@ gitcfg
 
 getyay
 
-confirm 'udisks2/mediainfo/xdg-utils/btop/alsa-utils/lsd/mlocate/alacritty/iosevka-fonts' 'udisks2 mediainfo xdg-utils btop alsa-utils lsd mlocate alacritty ttc-iosevka '
+confirm 'udisks2/mediainfo/btop/alsa-utils/lsd/alacritty/iosevka-fonts' 'udisks2 btop alsa-utils alacritty'
+confirm 'iosevka-fonts/lsd/mediainfo?' 'ttc-iosevka lsd mediainfo'
 confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
 yayit 'zsh-autosuggestions/zsh-syntax-highlighting/polybar?' 'zsh-autosuggestions zsh-syntax-highlighting polybar'
 yayit 'auto-cpufreq/fastfetch?' 'auto-cpufreq fastfetch'
@@ -247,6 +247,7 @@ ldm-remove
 #
 
 echo :: STARTING MIGRATION
+cd
 sleep 1
 
 echo :: Commiting alias config to .bashrc
