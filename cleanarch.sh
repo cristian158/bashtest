@@ -276,6 +276,11 @@ echo :: Checkout actual content from the bare repository to home
 
 config checkout
 
+read -p "Which files wanna delete? " AnS
+
+echo Deleting $Ans
+
+rm $Ans
 
 
 echo CASH Finished
