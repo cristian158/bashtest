@@ -26,7 +26,6 @@
 #
 
 # Confirm installation of Packages group via pacman
-#confirm 'Full Update' -yu 'FULL UPDATE'
 
 confirm () {
 	while true; do
@@ -228,6 +227,7 @@ getyay
 confirm 'udisks2/mediainfo/btop/alsa-utils/lsd/alacritty/iosevka-fonts' 'udisks2 btop alsa-utils alacritty'
 confirm 'iosevka-fonts/lsd/mediainfo?' 'ttc-iosevka lsd mediainfo'
 confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
+confirm 'feh/xrandr?' 'feh xorg-xrandr'
 yayit 'zsh-autosuggestions/zsh-syntax-highlighting/polybar?' 'zsh-autosuggestions zsh-syntax-highlighting polybar'
 yayit 'auto-cpufreq/fastfetch?' 'auto-cpufreq fastfetch'
 yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
@@ -250,8 +250,9 @@ echo :: STARTING MIGRATION
 cd
 sleep 1
 
-echo :: Commiting alias config to .bashrc
+echo :: Committing alias config to .bashrc and .zshrc
 echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg --work-tree=$HOME'" >> $HOME/.bashrc
+echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg --work-tree=$HOME'" >> $HOME/.zshrc
 sleep 1
 
 echo :: Source repository to ignore the folder where to clone
