@@ -259,7 +259,7 @@ echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg --work-tree=$HOME'" >> $HO
 sleep 1
 
 echo :: Source repository to ignore the folder where to clone
-echo ".cfg" >> .gitignore
+echo ".cfg" >> $HOME/.gitignore
 sleep 1
 
 echo :: Cloning dotdiles into bare repository @ home
@@ -303,7 +303,4 @@ echo '============================================='
 
 ######
 ## Add
-#
-# 
-# #### get zsh as default 
-# #### mpd & ncmpcpp script
+# mpd & ncmpcpp script
