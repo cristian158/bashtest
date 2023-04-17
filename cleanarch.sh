@@ -166,6 +166,7 @@ zsh-it () {
 		read -p "Do u want powerlevel10k? Y/N " ANSWER
 		case $ANSWER in
 			[yY] | [yY][eE][sS])
+				yayit 'zsh-autosuggestions/zsh-syntax-highlighting?' 'zsh autosuggs and highlights'
 				git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.files/powerlevel10k
 				echo 'source ~/.files/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
 				echo "ZSH-itted"
@@ -224,12 +225,12 @@ gitcfg
 
 getyay
 
-confirm 'udisks2/mediainfo/btop/alsa-utils/lsd/alacritty/iosevka-fonts' 'udisks2 btop alsa-utils alacritty'
+confirm 'udisks2/mediainfo/btop/alsa-utils/lsd/alacritty' 'udisks2 btop alsa-utils alacritty'
 confirm 'iosevka-fonts/lsd/mediainfo?' 'ttc-iosevka lsd mediainfo'
 confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
 confirm 'feh/xrandr/rofi?' 'feh xorg-xrandr rofi'
-yayit 'zsh-autosuggestions/zsh-syntax-highlighting/polybar?' 'zsh-autosuggestions zsh-syntax-highlighting polybar'
-yayit 'auto-cpufreq/fastfetch?' 'auto-cpufreq fastfetch'
+## yayit 'polybar?' ' polybar'
+yayit 'auto-cpufreq/fastfetch/polybar?' 'auto-cpufreq fastfetch polybar'
 yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
 
 yayit 'bitwarden/stacer/timeshift?' 'bitwarden stacer timeshift'
@@ -267,13 +268,25 @@ echo :: Defining alias in current shell scope
 alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 sleep 1 
 
-echo :: Checkout actual content from the bare repository to home
+echo :: Checkout actual content from the bare repository to home after sourcing files
+source ~/.bashrc
+source ~/.zshrc
 config checkout
 
 read -p "Which files wanna delete? " AnS
 echo :: Deleting $Ans
 rm $Ans
 
+echo :: Adding all
+config add .
+sleep 1
+
+echo :: Committing makeover
+config commit 'home makeover'
+sleep 1 
+
+echo :: Pushing changes (password required)
+config push
 
 echo CASH Finished
 
