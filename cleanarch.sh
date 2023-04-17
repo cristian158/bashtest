@@ -163,10 +163,10 @@ buildit () {
 ## maybe try to find better directory to clone to
 zsh-it () {
 	while true; do
-		read -p "Do u want powerlevel10k? Y/N " ANSWER
+		read -p ":: Do u want powerlevel10k? Y/N " ANSWER
 		case $ANSWER in
 			[yY] | [yY][eE][sS])
-				yayit 'zsh-autosuggestions/zsh-syntax-highlighting?' 'zsh autosuggs and highlights'
+				yayit 'zsh autosuggs/highlights?' 'zsh-autosuggestions zsh-syntax-highlighting'
 				git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.files/powerlevel10k
 				echo 'source ~/.files/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
 				echo "ZSH-itted"
@@ -229,14 +229,16 @@ confirm 'udisks2/mediainfo/btop/alsa-utils/lsd/alacritty' 'udisks2 btop alsa-uti
 confirm 'iosevka-fonts/lsd/mediainfo?' 'ttc-iosevka lsd mediainfo'
 confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
 confirm 'feh/xrandr/rofi?' 'feh xorg-xrandr rofi'
-## yayit 'polybar?' ' polybar'
 yayit 'auto-cpufreq/fastfetch/polybar?' 'auto-cpufreq fastfetch polybar'
 yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
+yayit 'rsync/xbacklight/ufw/neovim/lxappearance?' 'rsync xbacklight ufw neovim lxappearance'
 
+yayit ly
 yayit 'bitwarden/stacer/timeshift?' 'bitwarden stacer timeshift'
 confirm 'firefox?' 'firefox'
 confirm 'musescore/nicotine?' 'musescore nicotine+'
 confirm 'qbittorrent/vlc?' 'qbittorrent vlc'
+confirm 'kdenlive?' 'kdenlive'
 
 zsh-it
 
@@ -289,31 +291,19 @@ echo :: Pushing changes (password required)
 config push
 
 echo CASH Finished
-
-
+echo '============================================='
 
 
 ## It seems currently included
 # confirm 'base-devel' '-S base-devel' 'BASE DEVEL'
 
-
 # confirm 'gtk engines' '-S gtk-engine-murrine gtk-engines' 'GTK ENGINES'
 # buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea'
 # buildit Icons https://github.com/vinceliuice/Qogir-icon-theme Qogir-icon-theme
 
-
-
 ######
 ## Add
-# rsync
-# ufw
-# mediainfo
-# nvim
-# lxappearance
-# ly display manager
-# xbacklight
 #
-#
-# kdenlive
+# 
 # #### get zsh as default 
 # #### mpd & ncmpcpp script
