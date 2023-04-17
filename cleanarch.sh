@@ -225,7 +225,7 @@ gitcfg
 
 getyay
 
-confirm 'udisks2/mediainfo/btop/alsa-utils/lsd/alacritty' 'udisks2 btop alsa-utils alacritty'
+confirm 'udisks2/btop/alsa-utils/lsd/alacritty' 'udisks2 btop alsa-utils alacritty'
 confirm 'iosevka-fonts/lsd/mediainfo?' 'ttc-iosevka lsd mediainfo'
 confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
 confirm 'feh/xrandr/rofi?' 'feh xorg-xrandr rofi'
