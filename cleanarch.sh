@@ -233,7 +233,7 @@ yayit 'auto-cpufreq/fastfetch/polybar?' 'auto-cpufreq fastfetch polybar'
 yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
 yayit 'rsync/xbacklight/ufw/neovim/lxappearance?' 'rsync xbacklight ufw neovim lxappearance'
 
-yayit ly
+yayit 'ly' 'ly'
 yayit 'bitwarden/stacer/timeshift?' 'bitwarden stacer timeshift'
 confirm 'firefox?' 'firefox'
 confirm 'musescore/nicotine?' 'musescore nicotine+'
@@ -303,4 +303,5 @@ echo '============================================='
 
 ######
 ## Add
+# libnotify
 # mpd & ncmpcpp script
