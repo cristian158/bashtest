@@ -32,7 +32,7 @@ confirm () {
 		read -p ":: Do u want $1 Y/N " ANSWER
 		case $ANSWER in
 			[yY] | [yY][eE][sS])
-				sudo pacman -S $2
+				sudo pacman -S --needed $2
 				echo SOFTWARE INSTALLED
 				sleep 1
 				break
@@ -112,7 +112,7 @@ yayit () {
 		read -p ":: Do u want $1 Y/N " ANSWER
 		case $ANSWER in
 			[yY] | [yY][eE][sS])
-				yay -S $2
+				yay -S --needed $2
 				echo SOFTWARE INSTALLED
 				sleep 1
 				break
@@ -227,7 +227,7 @@ getyay
 confirm 'udisks2/mediainfo/btop/alsa-utils/lsd/alacritty/iosevka-fonts' 'udisks2 btop alsa-utils alacritty'
 confirm 'iosevka-fonts/lsd/mediainfo?' 'ttc-iosevka lsd mediainfo'
 confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
-confirm 'feh/xrandr?' 'feh xorg-xrandr'
+confirm 'feh/xrandr/rofi?' 'feh xorg-xrandr rofi'
 yayit 'zsh-autosuggestions/zsh-syntax-highlighting/polybar?' 'zsh-autosuggestions zsh-syntax-highlighting polybar'
 yayit 'auto-cpufreq/fastfetch?' 'auto-cpufreq fastfetch'
 yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
@@ -247,7 +247,7 @@ ldm-remove
 #
 
 echo :: STARTING MIGRATION
-cd
+cd ~/
 sleep 1
 
 echo :: Committing alias config to .bashrc and .zshrc
