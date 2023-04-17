@@ -236,7 +236,7 @@ yayit 'rsync/xbacklight/ufw/neovim/lxappearance?' 'rsync xbacklight ufw neovim l
 yayit 'ly' 'ly'
 yayit 'bitwarden/stacer/timeshift?' 'bitwarden stacer timeshift'
 confirm 'firefox?' 'firefox'
-confirm 'musescore/nicotine?' 'musescore nicotine+'
+confirm 'musescore/nicotine?' 'musescore nicotine'
 confirm 'qbittorrent/vlc?' 'qbittorrent vlc'
 confirm 'kdenlive?' 'kdenlive'
 
@@ -272,7 +272,7 @@ sleep 1
 
 echo :: Checkout actual content from the bare repository to home after sourcing files
 source ~/.bashrc
-source ~/.zshrc
+#source ~/.zshrc
 config checkout
 
 read -p "Which files wanna delete? " AnS
