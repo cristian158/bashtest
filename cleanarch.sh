@@ -244,52 +244,6 @@ zsh-it
 
 ldm-remove
 
-
-##############
-## MIGRATION
-#
-
-echo :: STARTING MIGRATION
-cd ~/
-sleep 1
-
-echo :: Committing alias config to .bashrc and .zshrc
-echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg --work-tree=$HOME'" >> $HOME/.bashrc
-echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg --work-tree=$HOME'" >> $HOME/.zshrc
-sleep 1
-
-echo :: Source repository to ignore the folder where to clone
-echo ".cfg" >> $HOME/.gitignore
-sleep 1
-
-echo :: Cloning dotdiles into bare repository @ home
-git clone --bare https://github.com/cristian158/spweedy $HOME/.cfg
-sleep 1
-
-echo :: Defining alias in current shell scope
-alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
-sleep 1 
-
-echo :: Checkout actual content from the bare repository to home after sourcing files
-source ~/.bashrc
-#source ~/.zshrc
-config checkout
-
-read -p "Which files wanna delete? " AnS
-echo :: Deleting $Ans
-rm $Ans
-
-echo :: Adding all
-config add .
-sleep 1
-
-echo :: Committing makeover
-config commit 'home makeover'
-sleep 1 
-
-echo :: Pushing changes (password required)
-config push
-
 echo CASH Finished
 echo '============================================='
 
