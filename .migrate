@@ -4,6 +4,8 @@
 ##############
 ## MIGRATION
 #
+#	Original article: https://www.atlassian.com/git/tutorials/dotfiles
+#	DT's Git Bare Repo - A Better Way to Manage Dotfiles
 
 ## Script to migrate home git bare repository to new system
 #

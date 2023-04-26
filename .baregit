@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+
+## Git Bare Repository From Scratch
+## (GiBReFS)
+##
+## Script to store a git bare repository in a side folder (.cfg), to track files
+## Starting From Scratch
+#
+## Original article:
+## https://www.atlassian.com/git/tutorials/dotfiles
+#
+
+
+## create .cfg folder to be git bare repository
+git init --bare $HOME/.cfg
+
+## alias to interact with configuration repository instead of regular git
+alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
+
+## set a local flag to hide not explicitly tracked files
+config config --local status.showUntrackedFiles no
+
+## echo alias into rc's
+echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'" >> $HOME/.bashrc
+#echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'" >> $HOME/.zshrc
+

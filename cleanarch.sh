@@ -234,7 +234,7 @@ yayit 'auto-cpufreq/fastfetch/polybar?' 'auto-cpufreq fastfetch polybar'
 yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
 yayit 'rsync/xbacklight/ufw/neovim/lxappearance?' 'rsync xbacklight ufw neovim lxappearance'
 
-yayit 'ly' 'ly'
+yayit 'ly/notify?' 'ly libnotify'
 yayit 'bitwarden/stacer/timeshift?' 'bitwarden stacer timeshift'
 confirm 'firefox?' 'firefox'
 confirm 'musescore/nicotine?' 'musescore nicotine'
@@ -249,8 +249,6 @@ echo CASH Finished
 echo '============================================='
 
 
-## It seems currently included
-# confirm 'base-devel' '-S base-devel' 'BASE DEVEL'
 
 # confirm 'gtk engines' '-S gtk-engine-murrine gtk-engines' 'GTK ENGINES'
 # buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea'
@@ -258,5 +256,4 @@ echo '============================================='
 
 ######
 ## Add
-# libnotify
 # mpd & ncmpcpp script
