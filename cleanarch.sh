@@ -33,7 +33,7 @@ confirm () {
 		case $ANSWER in
 			[yY] | [yY][eE][sS])
 				sudo pacman -S --needed $2
-				echo SOFTWARE INSTALLED
+				echo :: SOFTWARE INSTALLED
 				sleep 1
 				break
 	     			;;
@@ -113,7 +113,7 @@ yayit () {
 		case $ANSWER in
 			[yY] | [yY][eE][sS])
 				yay -S --needed $2
-				echo SOFTWARE INSTALLED
+				echo :: SOFTWARE INSTALLED
 				sleep 1
 				break
 				;;
@@ -140,7 +140,7 @@ buildit () {
 				cd $3
 				/install.sh $4
 				cd ..
-				echo SOFWARE INSTALLED
+				echo :: SOFWARE INSTALLED
 				echo '============================================='
 				sleep 1
 		     		break
@@ -169,7 +169,7 @@ zsh-it () {
 				yayit 'zsh autosuggs/highlights?' 'zsh-autosuggestions zsh-syntax-highlighting'
 				git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.files/powerlevel10k
 				echo 'source ~/.files/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
-				echo "ZSH-itted"
+				echo ":: ZSH-itted"
 				echo '============================================='
 				sleep 1
 				break
@@ -189,12 +189,41 @@ zsh-it () {
 
 ldm-remove () {
 	while true; do
-		read -p "Shall we remove LightDM? Y/N " ANSWER
+		read -p "::Shall we remove LightDM? Y/N " ANSWER
 		case $ANSWER in
 			[yY] | [yY][eE][sS])
 				yay -Rsn lightdm-gtk-greeter
 				yay -Rsn lightdm
-				echo 'LightDM Removed'
+				echo ':: LightDM Removed'
+				echo '============================================='
+				sleep 1
+				break
+				;;
+			[nN] | [nN][oO])
+				echo '=================SKIPPING===================='
+				sleep 1
+				break
+				;;
+			*)
+				echo 'Neighbour Please' >&2
+		esac
+	done
+				
+}
+
+
+## Ly display manager
+lyit () {
+	while true; do
+		read -p ":: Do u want ly? Y/N " ANSWER
+		case $ANSWER in
+			[yY] | [yY][eE][sS])
+				yay -S ly
+				echo ':: Ly Installed'
+				sleep 1
+				sudo systemctl enable ly.service
+				sudo systemctl start ly.service
+				echo ':: Ly Service enabled/started'
 				echo '============================================='
 				sleep 1
 				break
@@ -243,7 +272,9 @@ confirm 'kdenlive?' 'kdenlive'
 
 zsh-it
 
-ldm-remove
+##ldm-remove
+
+lyit
 
 echo CASH Finished
 echo '============================================='
