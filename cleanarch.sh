@@ -222,7 +222,7 @@ lyit () {
 				echo ':: Ly Installed'
 				sleep 1
 				sudo systemctl enable ly.service
-				sudo systemctl start ly.service
+				#sudo systemctl start ly.service
 				echo ':: Ly Service enabled/started'
 				echo '============================================='
 				sleep 1
@@ -254,25 +254,22 @@ gitcfg
 
 getyay
 
-confirm 'vim/xorg?' 'vim xorg'
+confirm 'vim/xorg/ntfs?' 'vim xorg ntfs-3g'
 confirm 'udisks2/btop/alsa-utils/lsd/alacritty' 'udisks2 btop alsa-utils alacritty'
 confirm 'iosevka-fonts/lsd/mediainfo?' 'ttc-iosevka lsd mediainfo'
 confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
-confirm 'feh/xrandr/rofi?' 'feh xorg-xrandr rofi'
+confirm 'feh/rofi/libnotify/mlocate?' 'feh rofi libnotify mlocate'
 yayit 'auto-cpufreq/fastfetch/polybar?' 'auto-cpufreq fastfetch polybar'
 yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
 yayit 'rsync/xbacklight/ufw/neovim/lxappearance?' 'rsync xbacklight ufw neovim lxappearance'
 
-yayit 'ly/notify?' 'ly libnotify'
 yayit 'bitwarden/stacer/timeshift?' 'bitwarden stacer timeshift'
 confirm 'firefox?' 'firefox'
-confirm 'musescore/nicotine?' 'musescore nicotine'
+confirm 'musescore/nicotine?' 'musescore nicotine+'
 confirm 'qbittorrent/vlc?' 'qbittorrent vlc'
-confirm 'kdenlive?' 'kdenlive'
+confirm 'ardour/calf?' 'ardour calf'
 
 zsh-it
-
-##ldm-remove
 
 lyit
 
@@ -287,4 +284,6 @@ echo '============================================='
 
 ######
 ## Add
-# mpd & ncmpcpp script
+# mpd & ncmpcpp & mpc script
+# neovim script
+# try buildit (maybe issue with /install.sh, if so, try bash install.sh)
