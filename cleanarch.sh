@@ -287,3 +287,4 @@ echo '============================================='
 # mpd & ncmpcpp & mpc script
 # neovim script
 # try buildit (maybe issue with /install.sh, if so, try bash install.sh)
+# reflector?
