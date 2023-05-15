@@ -261,7 +261,7 @@ confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
 confirm 'feh/rofi/libnotify/mlocate?' 'feh rofi libnotify mlocate'
 yayit 'auto-cpufreq/fastfetch/polybar?' 'auto-cpufreq fastfetch polybar'
 yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
-yayit 'rsync/xbacklight/ufw/neovim/lxappearance?' 'rsync xbacklight ufw neovim lxappearance'
+yayit 'rsync/xbacklight/ufw/neovim/lxappearance/pcmanfm?' 'rsync xbacklight ufw neovim lxappearance pcmanfm-gtk3'
 
 yayit 'bitwarden/stacer/timeshift?' 'bitwarden stacer timeshift'
 confirm 'firefox?' 'firefox'
@@ -288,3 +288,4 @@ echo '============================================='
 # neovim script
 # try buildit (maybe issue with /install.sh, if so, try bash install.sh)
 # reflector?
+# gvfs
