@@ -185,31 +185,6 @@ zsh-it () {
 	done
 }
 
-## REMOVE LIGHTDM
-
-ldm-remove () {
-	while true; do
-		read -p "::Shall we remove LightDM? Y/N " ANSWER
-		case $ANSWER in
-			[yY] | [yY][eE][sS])
-				yay -Rsn lightdm-gtk-greeter
-				yay -Rsn lightdm
-				echo ':: LightDM Removed'
-				echo '============================================='
-				sleep 1
-				break
-				;;
-			[nN] | [nN][oO])
-				echo '=================SKIPPING===================='
-				sleep 1
-				break
-				;;
-			*)
-				echo 'Neighbour Please' >&2
-		esac
-	done
-				
-}
 
 
 ## Ly display manager
@@ -254,20 +229,16 @@ gitcfg
 
 getyay
 
-confirm 'vim/xorg/ntfs?' 'vim xorg ntfs-3g'
-confirm 'udisks2/btop/alsa-utils/lsd/alacritty' 'udisks2 btop alsa-utils alacritty'
-confirm 'iosevka-fonts/lsd/mediainfo?' 'ttc-iosevka lsd mediainfo'
-confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
-confirm 'feh/rofi/libnotify/mlocate?' 'feh rofi libnotify mlocate'
-yayit 'auto-cpufreq/fastfetch/polybar?' 'auto-cpufreq fastfetch polybar'
-yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
-yayit 'rsync/xbacklight/ufw/neovim/lxappearance/pcmanfm?' 'rsync xbacklight ufw neovim lxappearance pcmanfm-gtk3'
 
-yayit 'bitwarden/stacer/timeshift?' 'bitwarden stacer timeshift'
+yayit 'essentials?' 'vim xorg ntfs-3g udisks2 btop alsa-utils alacritty hblock ttc-iosevka lsd mediainfo bspwm sxhkd picom feh sxiv rofi libnotify mlocate auto-cpufreq fastfetch polybar pulsemixer flameshot dvtm rsync ufw neovim lxappearance pcmanfm gvfs'
+
 confirm 'firefox?' 'firefox'
-confirm 'musescore/nicotine?' 'musescore nicotine+'
-confirm 'qbittorrent/vlc?' 'qbittorrent vlc'
-confirm 'ardour/calf?' 'ardour calf'
+
+confirm 'ardour/calf/musescore/nicotine/qbittorrent/vlc/bitwarden/bleachbit/timeshift?' 'ardour calf musescore nicotine+ qbittorrent vlc bitwarden bleachbit timeshift'
+
+confirm 'gtk engines' '-S gtk-engine-murrine gtk-engines' 'GTK ENGINES'
+buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea'
+buildit Icons https://github.com/vinceliuice/Qogir-icon-theme Qogir-icon-theme
 
 zsh-it
 
@@ -277,10 +248,15 @@ echo CASH Finished
 echo '============================================='
 
 
+# confirm 'vim/xorg/ntfs?' 'vim xorg ntfs-3g'
+# confirm 'udisks2/btop/alsa-utils/lsd/alacritty/hblock' 'udisks2 btop alsa-utils alacritty hblock'
+# confirm 'iosevka-fonts/lsd/mediainfo?' 'ttc-iosevka lsd mediainfo'
+# confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
+# confirm 'feh/rofi/libnotify/mlocate?' 'feh rofi libnotify mlocate'
+# yayit 'auto-cpufreq/fastfetch/polybar?' 'auto-cpufreq fastfetch polybar'
+# yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
+# yayit 'rsync/xbacklight/ufw/neovim/lxappearance/pcmanfm/gvfs?' 'rsync xbacklight ufw neovim lxappearance pcmanfm-gtk3 gvfs'
 
-# confirm 'gtk engines' '-S gtk-engine-murrine gtk-engines' 'GTK ENGINES'
-# buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea'
-# buildit Icons https://github.com/vinceliuice/Qogir-icon-theme Qogir-icon-theme
 
 ######
 ## Add
@@ -288,4 +264,3 @@ echo '============================================='
 # neovim script
 # try buildit (maybe issue with /install.sh, if so, try bash install.sh)
 # reflector?
-# gvfs
