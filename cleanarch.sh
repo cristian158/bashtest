@@ -230,11 +230,11 @@ gitcfg
 getyay
 
 
-yayit 'essentials?' 'vim xorg ntfs-3g udisks2 btop alsa-utils alacritty hblock ttc-iosevka lsd mediainfo bspwm sxhkd picom feh sxiv rofi libnotify mlocate auto-cpufreq fastfetch polybar pulsemixer flameshot dvtm rsync ufw neovim lxappearance pcmanfm gvfs'
+yayit 'essentials?' 'vim xorg ntfs-3g udisks2 btop alsa-utils alacritty hblock ttc-iosevka lsd mediainfo bspwm sxhkd picom feh sxiv rofi libnotify mlocate auto-cpufreq fastfetch polybar pulsemixer flameshot dvtm rsync ufw neovim lxappearance pcmanfm-gtk gvfs reflector blueman bluez bluez-libs bluez-utils pulseaudio-bluetooth dunst'
 
 confirm 'firefox?' 'firefox'
 
-confirm 'ardour/calf/musescore/nicotine/qbittorrent/vlc/bitwarden/bleachbit/timeshift?' 'ardour calf musescore nicotine+ qbittorrent vlc bitwarden bleachbit timeshift'
+yayit 'ardour/calf/musescore/nicotine/qbittorrent/vlc/bitwarden/bleachbit/timeshift/kdenlive/breeze?' 'ardour calf musescore nicotine+ qbittorrent vlc bitwarden bleachbit timeshift kdenlive breeze'
 
 confirm 'gtk engines' '-S gtk-engine-murrine gtk-engines' 'GTK ENGINES'
 buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea'
@@ -263,4 +263,3 @@ echo '============================================='
 # mpd & ncmpcpp & mpc script
 # neovim script
 # try buildit (maybe issue with /install.sh, if so, try bash install.sh)
-# reflector?
