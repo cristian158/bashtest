@@ -230,7 +230,7 @@ gitcfg
 getyay
 
 
-yayit 'essentials?' 'vim xorg ntfs-3g udisks2 btop alsa-utils alacritty hblock ttc-iosevka lsd mediainfo bspwm sxhkd picom feh sxiv rofi libnotify mlocate auto-cpufreq fastfetch polybar pulsemixer flameshot dvtm rsync ufw neovim lxappearance pcmanfm-gtk gvfs reflector blueman bluez bluez-libs bluez-utils pulseaudio-bluetooth dunst'
+yayit 'essentials?' 'vim xorg ntfs-3g udisks2 rsync btop alacritty mlocate hblock ufw mediainfo bspwm sxhkd picom feh sxiv polybar rofi auto-cpufreq fastfetch flameshot dvtm neovim lxappearance pcmanfm-gtk gvfs reflector blueman bluez bluez-libs bluez-utils pulsemixer pulseaudio-bluetooth alsa-utils dunst libnotify ttc-iosevka lsd'
 
 confirm 'firefox?' 'firefox'
 
