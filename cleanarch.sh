@@ -230,7 +230,7 @@ gitcfg
 getyay
 
 
-yayit 'essentials?' 'vim xorg ntfs-3g udisks2 rsync btop alacritty mlocate hblock ufw mediainfo bspwm sxhkd picom feh sxiv polybar rofi auto-cpufreq fastfetch flameshot dvtm neovim lxappearance pcmanfm-gtk gvfs reflector blueman bluez bluez-libs bluez-utils pulsemixer pulseaudio-bluetooth alsa-utils dunst libnotify ttc-iosevka lsd'
+yayit 'essentials?' 'vim xorg ntfs-3g udisks2 pacman-contrib rsync btop alacritty mlocate hblock ufw mediainfo bspwm sxhkd picom feh sxiv polybar rofi auto-cpufreq fastfetch flameshot dvtm neovim lxappearance-gtk3 pcmanfm-gtk3 gvfs gvfs-mtp reflector blueman bluez bluez-libs bluez-utils alsa-utils dunst libnotify tldr ttc-iosevka lsd'
 
 confirm 'firefox?' 'firefox'
 
@@ -248,13 +248,6 @@ echo CASH Finished
 echo '============================================='
 
 
-# confirm 'vim/xorg/ntfs?' 'vim xorg ntfs-3g'
-# confirm 'udisks2/btop/alsa-utils/lsd/alacritty/hblock' 'udisks2 btop alsa-utils alacritty hblock'
-# confirm 'iosevka-fonts/lsd/mediainfo?' 'ttc-iosevka lsd mediainfo'
-# confirm 'bspwm/sxhkd/picom?' 'bspwm sxhkd picom'
-# confirm 'feh/rofi/libnotify/mlocate?' 'feh rofi libnotify mlocate'
-# yayit 'auto-cpufreq/fastfetch/polybar?' 'auto-cpufreq fastfetch polybar'
-# yayit 'pulsemixer/flameshot/dvtm?' 'pulsemixer flameshot dvtm'
 # yayit 'rsync/xbacklight/ufw/neovim/lxappearance/pcmanfm/gvfs?' 'rsync xbacklight ufw neovim lxappearance pcmanfm-gtk3 gvfs'
 
 
@@ -262,4 +255,7 @@ echo '============================================='
 ## Add
 # mpd & ncmpcpp & mpc script
 # neovim script
-# try buildit (maybe issue with /install.sh, if so, try bash install.sh)
+#
+# auto-cpufreq
+# nobeep
+# touchpad
