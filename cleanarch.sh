@@ -47,6 +47,7 @@ confirm() {
 	done
 }
 
+
 # Set git config
 
 gitcfg() {
@@ -72,6 +73,7 @@ gitcfg() {
 	done
 
 }
+
 
 # Function to install yay
 
@@ -105,6 +107,7 @@ getyay() {
 	done
 }
 
+
 # Function to install shit with yay
 
 yayit() {
@@ -128,6 +131,51 @@ yayit() {
 		esac
 	done
 }
+
+
+# Function to install and confg Ranger
+
+rangit() {
+	while true; do
+		read -p ":: Do u want Ranger DevIcons? Y/N " ANSWER
+		case $ANSWER in
+		[yY] | [yY][eE][sS])
+      git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons
+			echo ':: Ranger DevIcons cloned'
+			sleep 1
+      ranger --copy-config=all
+			echo ':: Ranger Configd'
+      sleep 1
+      echo "
+      #########################
+      ### Added by CASH 
+
+      default_linemode devicons
+      set preview_images true
+      set preview_images_method ueberzug
+
+      map DD shell mv %s /home/${USER}/.local/share/Trash/files/
+
+      " >> $HOME/.config/ranger/rc.conf
+			echo ':: rc.conf confd'
+			sleep 1
+      cp ~/bashtest/.Xresources ~/
+			echo ':: Xresrcs Cpd'
+			break
+			;;
+		[nN] | [nN][oO])
+			echo '=================SKIPPING===================='
+			sleep 1
+			break
+			;;
+		*)
+			echo 'Neighbour Please' >&2
+			;;
+		esac
+	done
+
+}
+
 
 # Function to build shit from source
 
@@ -157,6 +205,7 @@ buildit() {
 	done
 }
 
+
 # Function to install zsh shit
 
 # echo 'source ~/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
@@ -185,6 +234,7 @@ zsh-it() {
 		esac
 	done
 }
+
 
 ## Ly display manager
 lyit() {
@@ -228,7 +278,10 @@ gitcfg
 
 getyay
 
-yayit 'essentials?' 'vim xorg ntfs-3g udisks2 pacman-contrib p7zip rsync btop alacritty mlocate hblock ufw mediainfo bspwm sxhkd picom feh sxiv polybar rofi auto-cpufreq fastfetch flameshot dvtm neovim lxappearance-gtk3 pcmanfm-gtk3 gvfs gvfs-mtp reflector blueman bluez bluez-libs bluez-utils alsa-utils dunst libnotify tldr ttc-iosevka lsd xclip'
+yayit 'essentials?' 'vim xorg ntfs-3g udisks2 pacman-contrib p7zip rsync btop alacritty mlocate hblock ufw mediainfo bspwm sxhkd picom feh sxiv polybar rofi auto-cpufreq fastfetch flameshot dvtm neovim lxappearance-gtk3 pcmanfm-gtk3 gvfs gvfs-mtp reflector blueman bluez bluez-libs bluez-utils alsa-utils dunst libnotify tldr ttc-iosevka lsd xclip ranger ttf-nerd-fonts-symbols ueberzug'
+sleep 2 
+
+rangit
 
 confirm 'firefox?' 'firefox'
 
@@ -245,7 +298,6 @@ lyit
 echo CASH Finished
 echo '============================================='
 
-# yayit 'rsync/xbacklight/ufw/neovim/lxappearance/pcmanfm/gvfs?' 'rsync xbacklight ufw neovim lxappearance pcmanfm-gtk3 gvfs'
 
 ######
 ## Add
@@ -255,3 +307,4 @@ echo '============================================='
 # auto-cpufreq
 # nobeep
 # touchpad
+# ditch xbacklight maybe, use xrandr instead with script maybe (figure out how to hotkey brightness)
