@@ -60,3 +60,9 @@ config config --local status.showUntrackedFiles no
 
 
 echo :: byyyyyy
+
+########################
+## I think first push has to be: 
+## 	$ config push --set-upstream origin master
+## 
+## the second push went without token
