@@ -48,6 +48,32 @@ confirm() {
 }
 
 
+# Remove some shit
+
+remove() {
+	while true; do
+		read -p ":: Do u want remove $1 Y/N " ANSWER
+		case $ANSWER in
+		[yY] | [yY][eE][sS])
+			rm -rf $2
+			echo :: REMOVED
+			sleep 1
+			break
+			;;
+		[nN] | [nN][oO])
+			echo =================SKIPPING====================
+			sleep 1
+			break
+			;;
+		*)
+			echo 'Please enter y/yes or n/no' >&2
+			;;
+		esac
+	done
+}
+
+
+
 # Set git config
 
 gitcfg() {
@@ -143,24 +169,25 @@ rangit() {
       git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons
 			echo ':: Ranger DevIcons cloned'
 			sleep 1
-      ranger --copy-config=all
+      			ranger --copy-config=all
 			echo ':: Ranger Configd'
-      sleep 1
-      echo "
-      #########################
-      ### Added by CASH 
+      			sleep 1
+  	                echo "
+	                #########################
+	                ### Added by CASH 
 
-      default_linemode devicons
-      set preview_images true
-      set preview_images_method ueberzug
+	                default_linemode devicons
+	                set preview_images true
+	                set preview_images_method ueberzug
 
-      map DD shell mv %s /home/${USER}/.local/share/Trash/files/
+	                map DD shell mv %s /home/${USER}/.local/share/Trash/files/
 
-      " >> $HOME/.config/ranger/rc.conf
+	                " >> $HOME/.config/ranger/rc.conf
 			echo ':: rc.conf confd'
 			sleep 1
-      cp ~/bashtest/.Xresources ~/
-			echo ':: Xresrcs Cpd'
+		        ## i want to add it to bare repo
+		        #cp ~/bashtest/.Xresources ~/
+			#echo ':: Xresrcs Cpd'
 			break
 			;;
 		[nN] | [nN][oO])
@@ -216,8 +243,8 @@ zsh-it() {
 		case $ANSWER in
 		[yY] | [yY][eE][sS])
 			yayit 'zsh autosuggs/highlights?' 'zsh-autosuggestions zsh-syntax-highlighting'
-			git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.files/powerlevel10k
-			echo 'source ~/.files/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
+			git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.config/powerlevel10k
+			echo 'source ~/.config/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
 			echo ":: ZSH-itted"
 			echo '============================================='
 			sleep 1
@@ -247,7 +274,9 @@ lyit() {
 			sleep 1
 			sudo systemctl enable ly.service
 			#sudo systemctl start ly.service
-			echo ':: Ly Service enabled/started'
+			echo ':: Ly Service enabled'
+			sleep 1
+			echo ':: Start Ly Service at will'
 			echo '============================================='
 			sleep 1
 			break
@@ -272,6 +301,9 @@ lyit() {
 echo Welcome to CASH
 sleep 1
 
+echo NOTE: Migrate needed, not included!!
+sleep 1
+
 confirm 'Full Update' -yu 'FULL UPDATE'
 
 gitcfg
@@ -279,7 +311,7 @@ gitcfg
 getyay
 
 yayit 'essentials?' 'vim xorg ntfs-3g udisks2 pacman-contrib p7zip rsync btop alacritty mlocate hblock ufw mediainfo bspwm sxhkd picom feh sxiv polybar rofi auto-cpufreq fastfetch flameshot dvtm neovim lxappearance-gtk3 pcmanfm-gtk3 gvfs gvfs-mtp reflector blueman bluez bluez-libs bluez-utils alsa-utils dunst libnotify tldr ttc-iosevka lsd xclip ranger ttf-nerd-fonts-symbols ueberzug'
-sleep 2 
+sleep 1
 
 rangit
 
@@ -287,8 +319,12 @@ confirm 'firefox?' 'firefox'
 
 yayit 'ardour/calf/musescore/nicotine/qbittorrent/vlc/bitwarden/bleachbit/timeshift/kdenlive/breeze/tenacity?' 'ardour calf musescore nicotine+ qbittorrent vlc bitwarden bleachbit timeshift kdenlive breeze tenacity-git'
 
-confirm 'gtk engines' '-S gtk-engine-murrine gtk-engines' 'GTK ENGINES'
-buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea'
+confirm 'gtk engines' 'gtk-engine-murrine gtk-engines' 'GTK ENGINES'
+buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'matcha-gtk-theme' '-c dark -t sea'
+
+echo 'Matcha Version: ' $(pacman -Q | grep matcha)
+remove 'Matcha folder' 'Matcha-gtk-theme'
+
 buildit Icons https://github.com/vinceliuice/Qogir-icon-theme Qogir-icon-theme
 
 zsh-it
