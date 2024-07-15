@@ -83,13 +83,17 @@ getyay() {
 		case $ANSWER in
 		[yY] | [yY][eE][sS])
 			echo ':: Cloning yay'
-			git clone https://aur.archlinux.org/yay.git
-			cd yay
-			makepkg -si
+			git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
 			cd
 			echo ':: Removing yay folder'
 			rm -rf ~/bashtest/yay
 			echo ':: yay folder removed'
+      # generate dev pkg db for *-git pkgs that were installed without yay. This command should only be run once.
+      yay -Y --gendb 
+      echo ':: Check for development package updates'
+      yay -Syu --devel 
+      echo ':: Make development package updates permanently enabled'
+      yay -Y --devel --save 
 			echo 'YAY INSTALL DONE'
 			echo '============================================='
 			sleep 1
@@ -241,7 +245,7 @@ buildit() {
 		[yY] | [yY][eE][sS])
 			git clone $2
 			cd $3
-			/install.sh $4
+			./install.sh $4
 			cd ..
 			sleep 1
 			break
@@ -391,11 +395,25 @@ confirm 'firefox?' 'firefox'
 
 yayit 'ardour/calf/musescore/nicotine/qbittorrent/vlc/bitwarden/bleachbit/timeshift/kdenlive/tenacity?' 'ardour calf musescore nicotine+ qbittorrent vlc bitwarden bleachbit timeshift kdenlive tenacity'
 
+
+
+#################
+### LA MIGRA WEYY
+
+## Clone dotfiles into bare repository @ home
+echo :: Cloning dotfiles into bare repository @ home
+git clone --bare https://github.com/cristian158/spweedy $HOME/.cfg
+sleep 1 
+## add when pertinent
+# if [ -e ~/.cfg ]; then echo 'dotfiles cloned into .cfg'; else echo 'something happen maybe'; fi
+
+
+
 echo CASH Finished
 echo '============================================='
 
 
-#################
+:#################
 ###   Add
 #
 #  mpd & ncmpcpp & mpc script (not sure if necessary)
