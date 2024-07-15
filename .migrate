@@ -24,9 +24,11 @@ echo ".cfg" >> .gitignore
 sleep 1
 
 ## Clone dotfiles into bare repository @ home
-echo :: Cloning dotdiles into bare repository @ home
+echo :: Cloning dotfiles into bare repository @ home
 git clone --bare https://github.com/cristian158/spweedy $HOME/.cfg
 sleep 1 
+## add when pertinent
+# if [ -e ~/.cfg ]; then echo 'dotfiles cloned into .cfg'; else echo 'something happen maybe'; fi
 
 ## Define alias in current shell scope
 echo :: Defining alias in current shell scope
@@ -66,3 +68,4 @@ echo :: byyyyyy
 ## 	$ config push --set-upstream origin master
 ## 
 ## the second push went without token
+## there's a workaround to this with ssh

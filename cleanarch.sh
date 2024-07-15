@@ -48,32 +48,6 @@ confirm() {
 }
 
 
-# Remove some shit
-
-remove() {
-	while true; do
-		read -p ":: Do u want remove $1 Y/N " ANSWER
-		case $ANSWER in
-		[yY] | [yY][eE][sS])
-			rm -rf $2
-			echo :: REMOVED
-			sleep 1
-			break
-			;;
-		[nN] | [nN][oO])
-			echo =================SKIPPING====================
-			sleep 1
-			break
-			;;
-		*)
-			echo 'Please enter y/yes or n/no' >&2
-			;;
-		esac
-	done
-}
-
-
-
 # Set git config
 
 gitcfg() {
@@ -83,7 +57,7 @@ gitcfg() {
 		[yY] | [yY][eE][sS])
 			git config --global user.email "cnovoa.o@gmail.com"
 			git config --global user.name "Cristian Novoa"
-			echo Config DONE
+			echo ':: Config DONE'
 			sleep 1
 			break
 			;;
@@ -108,15 +82,15 @@ getyay() {
 		read -p ":: Want yay? Y/N " ANSWER
 		case $ANSWER in
 		[yY] | [yY][eE][sS])
-			echo :: Cloning yay
+			echo ':: Cloning yay'
 			git clone https://aur.archlinux.org/yay.git
 			cd yay
 			makepkg -si
 			cd
-			echo :: Removing yay folder
+			echo ':: Removing yay folder'
 			rm -rf ~/bashtest/yay
-			echo :: yay folder removed
-			echo YAY INSTALL DONE
+			echo ':: yay folder removed'
+			echo 'YAY INSTALL DONE'
 			echo '============================================='
 			sleep 1
 			break
@@ -142,7 +116,7 @@ yayit() {
 		case $ANSWER in
 		[yY] | [yY][eE][sS])
 			yay -S --needed $2
-			echo :: SOFTWARE INSTALLED
+			echo ':: SOFTWARE INSTALLED'
 			sleep 1
 			break
 			;;
@@ -169,24 +143,24 @@ rangit() {
       git clone https://github.com/alexanderjeurissen/ranger_devicons ~/.config/ranger/plugins/ranger_devicons
 			echo ':: Ranger DevIcons cloned'
 			sleep 1
-      			ranger --copy-config=all
+      ranger --copy-config=all
 			echo ':: Ranger Configd'
-      			sleep 1
-  	                echo "
-	                #########################
-	                ### Added by CASH 
+      sleep 1
+      echo "
+      #########################
+      ### Added by CASH 
 
-	                default_linemode devicons
-	                set preview_images true
-	                set preview_images_method ueberzug
+      default_linemode devicons
+      set preview_images true
+      set preview_images_method ueberzug
 
-	                map DD shell mv %s /home/${USER}/.local/share/Trash/files/
+      map DD shell mv %s /home/${USER}/.local/share/Trash/files/
 
-	                " >> $HOME/.config/ranger/rc.conf
+      " >> $HOME/.config/ranger/rc.conf
 			echo ':: rc.conf confd'
 			sleep 1
-		        ## i want to add it to bare repo
-		        #cp ~/bashtest/.Xresources ~/
+      ## i want to add it to bare repo
+      #cp ~/bashtest/.Xresources ~/
 			#echo ':: Xresrcs Cpd'
 			break
 			;;
@@ -204,6 +178,60 @@ rangit() {
 }
 
 
+# Function to confg neovim 
+
+nvimit() {
+	while true; do
+		read -p ":: Do u want NvChad? Y/N " ANSWER
+		case $ANSWER in
+		[yY] | [yY][eE][sS])
+      echo ':: Cloning'
+      git clone https://github.com/NvChad/starter ~/.config/nvim --depth 1
+      if [ -e ~/.config/nvim/LICENSE ]; then echo ':: NvChad Starter cloned'; else 'Something went wrong maybe'; fi
+			sleep 1
+      echo 'Remember running :MasonInstallAll after lazy downloads plugins'
+      sleep 1
+			break
+			;;
+		[nN] | [nN][oO])
+			echo '=================SKIPPING===================='
+			sleep 1
+			break
+			;;
+		*)
+			echo 'Neighbour Please' >&2
+			;;
+		esac
+	done
+
+}
+
+
+# Remove some shit
+
+remove() {
+	while true; do
+		read -p ":: Do u want remove $1 Y/N " ANSWER
+		case $ANSWER in
+		[yY] | [yY][eE][sS])
+			rm -rf $2
+			echo ':: REMOVED'
+			sleep 1
+			break
+			;;
+		[nN] | [nN][oO])
+			echo '=================SKIPPING===================='
+			sleep 1
+			break
+			;;
+		*)
+			echo 'Please enter y/yes or n/no' >&2
+			;;
+		esac
+	done
+}
+
+
 # Function to build shit from source
 
 buildit() {
@@ -215,8 +243,6 @@ buildit() {
 			cd $3
 			/install.sh $4
 			cd ..
-			echo :: SOFWARE INSTALLED
-			echo '============================================='
 			sleep 1
 			break
 			;;
@@ -237,15 +263,16 @@ buildit() {
 
 # echo 'source ~/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
 ## maybe try to find better directory to clone to
-zsh-it() {
+zshit() {
 	while true; do
 		read -p ":: Do u want powerlevel10k? Y/N " ANSWER
 		case $ANSWER in
 		[yY] | [yY][eE][sS])
 			yayit 'zsh autosuggs/highlights?' 'zsh-autosuggestions zsh-syntax-highlighting'
 			git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.config/powerlevel10k
-			echo 'source ~/.config/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
-			echo ":: ZSH-itted"
+			## I think there's no need to echo to .zshrc if I have it on bare repo
+      ## echo 'source ~/.config/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
+			echo ':: ZSH-itted'
 			echo '============================================='
 			sleep 1
 			break
@@ -264,6 +291,7 @@ zsh-it() {
 
 
 ## Ly display manager
+
 lyit() {
 	while true; do
 		read -p ":: Do u want ly? Y/N " ANSWER
@@ -295,6 +323,7 @@ lyit() {
 }
 
 ##################################
+##################################
 ## Beginning of the actual script
 ##
 
@@ -310,37 +339,76 @@ gitcfg
 
 getyay
 
-yayit 'essentials?' 'vim xorg ntfs-3g udisks2 pacman-contrib p7zip rsync btop alacritty mlocate hblock ufw mediainfo bspwm sxhkd picom feh sxiv polybar rofi auto-cpufreq fastfetch flameshot dvtm neovim lxappearance-gtk3 pcmanfm-gtk3 gvfs gvfs-mtp reflector blueman bluez bluez-libs bluez-utils alsa-utils dunst libnotify tldr ttc-iosevka lsd xclip ranger ttf-nerd-fonts-symbols ueberzug'
-sleep 1
+yayit 'essentials?' 'alacritty alsa-utils auto-cpufreq blueman bluez-utils bluez bluez-libs bspwm btop dunst dvtm fastfetch feh flameshot gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate mpd neovim network-manager-applet ncmpcpp ntfs-3g p7zip pacman-contrib pcmanfm-gtk3 picom polybar ranger reflector ripgrep rofi rsync sxiv sxhkd tldr ttc-iosevka ttf-nerd-fonts-symbols udisks2 ueberzug ufw vim xarchiver xclip' 
 
 rangit
 
-confirm 'firefox?' 'firefox'
+nvimit
 
-yayit 'ardour/calf/musescore/nicotine/qbittorrent/vlc/bitwarden/bleachbit/timeshift/kdenlive/breeze/tenacity?' 'ardour calf musescore nicotine+ qbittorrent vlc bitwarden bleachbit timeshift kdenlive breeze tenacity-git'
+remove 'NvChad git folder' '~/.config/nvim/.git'
 
 confirm 'gtk engines' 'gtk-engine-murrine gtk-engines' 'GTK ENGINES'
-buildit 'matcha theme' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'matcha-gtk-theme' '-c dark -t sea'
 
-echo 'Matcha Version: ' $(pacman -Q | grep matcha)
+
+## add 
+buildit 'Matcha Theme' https://github.com/vinceliuice/Matcha-gtk-theme Matcha-gtk-theme '-c dark -t sea'
+echo ':: Matcha Version: ' $(pacman -Q | grep matcha)
 remove 'Matcha folder' 'Matcha-gtk-theme'
 
-buildit Icons https://github.com/vinceliuice/Qogir-icon-theme Qogir-icon-theme
+buildit 'Qogir Cursor' https://github.com/vinceliuice/Qogir-icon-theme Qogir-icon-theme '-c standard -t manjaro'
+if [ -e $HOME/.local/share/icons/Qogir-manjaro ]; then echo ':: Qogir Cursor installed'; else echo 'Something happened...'; fi
+remove 'Qogir folder' 'Qogir-icon-theme'
 
-zsh-it
+buildit 'Tela Icons' https://github.com/vinceliuice/Tela-icon-theme Tela-icon-theme ''
+## try yay tela-icon-theme
+if [ -e $HOME/.local/share/icons/Tela ]; then echo ':: Tela Icons installed'; else echo 'Something happened...'; fi
+remove 'Tela folder' 'Tela-icon-theme'
+
+
+zshit
+
+# it requires root privileges
+echo ':: Creating nobeep conf file'
+echo 'blacklist pcspkr
+blacklist snd_pcsp
+' >> /etc/modprobe.d/nobeep.conf 
+if [ -e /etc/modprobe.d/nobeep.conf ]; then echo 'Nobeep file done'; else echo 'Something happende...'; fi
+
+echo ':: Copying touchpad conf to etc'
+sudo cp ~/bashtest/30-touchpad.conf /etc/X11/xorg.conf.d/
+if [ -e /etc/X11/xorg.conf.d/30-touchpad.conf ]; then echo 'Touchpad conf file done'; else echo 'Something happened...'; fi
+sleep 1 
+
+echo ':: Creating dir for Flameshot'
+mkdir ~/00/Pictures/Flameshot 
+if [ -e $HOME/00/Pictures/Flameshot/ ]; then echo 'Flameshot folder created'; else echo 'Something happened...'; fi
+sleep 1
+
 
 lyit
+
+confirm 'firefox?' 'firefox'
+
+yayit 'ardour/calf/musescore/nicotine/qbittorrent/vlc/bitwarden/bleachbit/timeshift/kdenlive/tenacity?' 'ardour calf musescore nicotine+ qbittorrent vlc bitwarden bleachbit timeshift kdenlive tenacity'
 
 echo CASH Finished
 echo '============================================='
 
 
-######
-## Add
-# mpd & ncmpcpp & mpc script
-# neovim script
+#################
+###   Add
 #
-# auto-cpufreq
-# nobeep
-# touchpad
-# ditch xbacklight maybe, use xrandr instead with script maybe (figure out how to hotkey brightness)
+#  mpd & ncmpcpp & mpc script (not sure if necessary)
+#  auto-cpufreq
+#     $ git clone https://github.com/AdnanHodzic/auto-cpufreq.git
+#     $ cd auto-cpufreq && sudo ./auto-cpufreq-installer
+#     $ systemctl status auto-cpufreq
+#     $ sudo auto-cpufreq --stats
+#
+#  create MIGRATION part
+#
+#
+#################
+###   Deprecated
+#
+#  breeze (installed as a dependency at some point)
