@@ -13,15 +13,11 @@
 echo :: STARTING MIGRATION
 sleep 1
 
-## Commit alias config to .bashrc
-echo :: Committing alias config to .bashrc and .zshrc
+## Making sure alias is commited to bashrc/zashrc 
 echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'" >> $HOME/.bashrc
-sleep 1
 
 ## Source repository to ignore the folder where to clone
-echo :: Source repository to ignore the folder where to clone
 echo ".cfg" >> .gitignore
-sleep 1
 
 ## Clone dotfiles into bare repository @ home
 echo :: Cloning dotfiles into bare repository @ home
@@ -31,8 +27,7 @@ sleep 1
 # if [ -e ~/.cfg ]; then echo 'dotfiles cloned into .cfg'; else echo 'something happen maybe'; fi
 
 ## Define alias in current shell scope
-echo :: Defining alias in current shell scope
-alias config='/usr/bin/git --git-dir=#HOME/.cfg/ --work-tree=$HOME'
+alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 sleep 1
 
 ## Checkout actual content from the bare repository to home
