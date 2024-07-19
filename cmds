@@ -1,0 +1,221 @@
+#################
+###   MKDIR   ###
+#################
+
+$ mkdir -p ~/.config/{bspwm,sxhkd}                // -p make parent dirs as needed
+                                                  // create subdirs bspwm and sxhkd
+
+$ mkdir -p dir2/folders{1,2}                      // create subirs folders1 and folders2
+
+
+################
+###   COPY   ###
+################
+
+$ cp -rv /source/ /to/destiny                      // copy folder
+                                                   // -v verbose
+                                                   // -r recursive
+
+$ rsync -vah --dry-run /source                     // list files to copy
+
+$ rsync -vahP /source/ /to/destiny/                // -v verbose
+                                                   // -a archive (equals to -rlptogD)
+                                                   // -r recurse into dirs
+                                                   // -h sizes in human-readable format
+                                                   // -P progress
+        --ignore-existing
+
+/source                                            // sync 'source' folder and content
+/source/                                           // sync 'source' content
+
+cd a; ls -1 | xargs -n1 -P10 -I% rsync -ar % b/    // try; source a, destination b/
+
+
+####################
+###   DELETION   ###
+####################
+
+$ rm -irv /Dir                                   // -i prompt before every removal
+                                                 // -f force, never prompt
+                                                 // -r recursively rm dirs & their content
+                                                 // -v verbosely explain
+$ rm -rf /full/path/to/dir/                      // remove all files and subdirs of a dir 
+
+$ shred -vufzn 4                                 // -v verbose
+                                                 // -u overwrite and delete
+                                                 // -f change file permissions
+                                                 // -n number of iterations (default is 3)
+                                                 // -z final overwrite with zeros
+                                                 // no flags, overwrite 3 times
+
+
+
+###############
+###   ZIP   ###
+###############
+
+$ gzip                                            // make files smaller
+
+$ tar -xvzf document.tar.gz                       //  x: extract files
+// tar to archive directories                     //	v: verbose, list out files
+                                                  //	z: decompress files
+                                                  //	f: filename to work on
+
+$ tar -tzf document.tar.gz		             // list contents of .tar file before extracting
+
+$ 7za -y x '*.zip'                               // -y: assumes yes to all queries
+                                                 //  x: extract files with full paths
+                                                 //  l: list contents of archive
+
+$ mkcd ~/DL/Extract; 7za x ~/DL/we.zip            // while in home
+
+
+#######################################
+###   SUSPENSION MODE ON TERMINAL   ###
+#######################################
+
+## example
+$ htop
+## ^Z to suspend htop, go back to terminal
+$ fg							       // go back to htop
+
+
+
+####################
+###   HARDWARE   ###
+####################
+
+$ inxi -Fx						        // complete fastfetchish
+
+## NETWORK
+$ inxi -Na					            // -N network devices, driver
+                                        // -a advanced sys admin data
+
+$ mhwd						            // display & network controllers
+
+## BATTERY
+$ upower -i /org/freedesktop/UPower/devices/battery_BAT0 
+$ upower -i `upower -e | grep 'BAT'`
+$ upower -i $(upower -e | grep BAT) | grep -E "state|to\ full|to\ empty|percentage"
+$ cat /sys/class/power_supply/BAT0/capacity
+$ find /sys/class/power_supply/BAT0/ -type f | xargs -tn1 cat
+$ acpi
+$ ls /sys/class/power_supply/					// check bat and adaptor
+$ cat /sys/class/power_supply/ACAD/online			// 1 if plugged
+$ cat /sys/class/power_supply/BAT0/capacity 			// percentage
+
+## DISPLAY
+$ xrandr --output LVDS-1 --primary --mode 1366x768 --rotate normal --output HDMI-1 --mode 1920x
+1080 --rotate normal --above LVDS-1
+
+
+
+###################
+###   NETWORK   ###
+###################
+
+$ nmcli device wifi list                         // list available wifis
+$ nmcli device                                   // list network devices and state
+$ nmcli device wifi connect <SSID_or_BSSID> password <password>
+$ nmcli connection                               // list connection historial
+$ lspci | grep -i net                            // list network controllers
+
+
+
+##################
+###   KERNEL   ###
+##################
+
+$ uname -srm					       // -s --kernel-name
+                                                 // -r --kernel-release
+                                                 // -m --machine (hardware name)
+
+$ pacman -Q | grep linux                         // list kernels related software
+
+$ sudo pacman -S linux                           // install latest stable kernel
+
+
+
+###################
+###   PACMAN    ###
+###################
+
+$ sudo pacman -Syu --ignore=vlc                 // ignore vlc temporarily
+$ sudo pacman -Syyu --overwrite "*"             // when 'exists in filesystem' while update
+$ pamac clean --keep 1				// clean cache, keeps latest version pkg ver
+
+
+
+
+#############################################################################
+
+
+$ nohup <SOMEPKG> &                             // start from/indie of terminal
+
+$ xdg-open file.txt                             // open file
+
+$ /bin/ls                                       // outputs original ls w/o aliases
+$ /bin/ls | entr -s 'firefox localhost:3000'
+
+$ cd -                                          // into last dir
+
+$ ^r                                            // search cmd mode
+                                                // ^R again, search next one
+
+$ history                                       // show cmds history
+## add to bashrc (have to try on zshrc):
+## HISTTIMEFORMAT="%Y-%m-%d %T "	
+
+$ cmd1 && cmd2                                  // runs cmd2 only after cmd1
+$ cmd1; cmd2                                    // runs cmd2 even if cmd1 fails
+
+$ git commit -m "whatever..." || echo "Commit failed" // conditional execution
+
+$ grep 'string' directory-path/*.*              // find 'string' in all files of
+                                                // directory-path/
+
+
+
+$ curl -F "file=@filename.foo" 0x0.st           // cloud
+
+$ pstree                                        // show processes currently running on system
+
+
+$ sudo loadkeys -d                              // change keyboard layout to default
+
+$ cat /sys/block/---/queue/rotational           // 1: hdd; 0: ssd
+
+$ cat error.log | sort | uniq                   // cat to read file 
+                                                // sort it line by line 
+                                                // uniq to eliminate duplicates
+
+$ chown -R xxx: xxx                             // change ownership, after recylcing home dir for instance
+
+#####################
+###     ERRORS    ###
+#####################
+
+#########################
+#### Database Synch Error
+
+error: GPGME error: No data
+error: failed to synchronize all databases (invalid or corrupted database (PGP signature))
+ -> error refreshing databases - exit status 1
+
+### sudo rm -R /var/lib/pacman/sync 
+### sudo pacman -Syu
+
+
+####################
+### No dirmngr error 
+
+:: Importing keys with gpg... 
+gpg: keyblock resource '/home/spweedy/.local/share/gnupg/pubring.kbx': No such file or directory
+gpg: failed to create temporary file '/home/spweedy/.local/share/gnupg/.#lk0x000055a59a8d8f30.triton.29016': No such file or directory
+gpg: can't connect to the dirmngr: No such file or directory
+gpg: keyserver receive failed: No dirmngr
+ -> problem importing keys
+
+### create gnupg folder 
+mkdir .local/share/gnupg    
+
