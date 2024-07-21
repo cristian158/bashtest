@@ -1,3 +1,6 @@
+echo $(find . -maxdepth 2 -type d) >> ALBUMS
+
+
 #################
 ###   MKDIR   ###
 #################

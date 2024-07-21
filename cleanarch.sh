@@ -23,6 +23,20 @@
 ## FUNCTIONS
 #
 
+skip_msg() {
+			echo '=================SKIPPING===================='
+			sleep 1
+}
+
+pause() {
+			echo '============================================='
+			sleep 1
+}
+
+smth() {
+  echo 'Homething sappened...'
+}
+
 # Confirm installation of Packages group via pacman
 
 confirm() {
@@ -32,17 +46,15 @@ confirm() {
 		[yY] | [yY][eE][sS])
 			sudo pacman -S --needed $2
 			echo ":: $3 INSTALLED"
-			echo '============================================='
-			sleep 1
-			break
+			pause
+      break
 			;;
 		[nN] | [nN][oO])
-			echo =================SKIPPING====================
-			sleep 1
+      skip_msg
 			break
 			;;
 		*)
-			echo 'Please enter y/yes or n/no' >&2
+			smth >&2
 			;;
 		esac
 	done
@@ -59,17 +71,15 @@ gitcfg() {
 			git config --global user.email "cnovoa.o@gmail.com"
 			git config --global user.name "Cristian Novoa"
 			echo ':: Config DONE'
-			echo '============================================='
-			sleep 1
-			break
+			pause
+      break
 			;;
 		[nN] | [nN][oO])
-			echo =================SKIPPING====================
-			sleep 1
-			break
+			skip_msg
+      break
 			;;
 		*)
-			echo 'I suggest u cut the bs' >&2
+			smth >&2
 			;;
 		esac
 	done
@@ -86,10 +96,8 @@ getyay() {
 		[yY] | [yY][eE][sS])
 			echo ':: Cloning yay'
 			git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
-			cd
-			echo ':: Removing yay folder'
-			rm -rf ~/bashtest/yay
-			echo ':: yay folder removed'
+			cd ..
+      remove 'Yay folder' ~/bashtest/yay
       # generate dev pkg db for *-git pkgs that were installed without yay. This command should only be run once.
       yay -Y --gendb 
       echo ':: Check for development package updates'
@@ -97,17 +105,15 @@ getyay() {
       echo ':: Make development package updates permanently enabled'
       yay -Y --devel --save 
 			echo 'YAY INSTALL DONE'
-			echo '============================================='
-			sleep 1
-			break
+			pause
+      break
 			;;
 		[nN] | [nN][oO])
-			echo '=================SKIPPING===================='
-			sleep 1
+      skip_msg
 			break
 			;;
 		*)
-			echo "Please enter y/yes or n/no" >&2
+			smth >&2
 			;;
 		esac
 	done
@@ -123,17 +129,15 @@ yayit() {
 		[yY] | [yY][eE][sS])
 			yay -S --needed $2
 			echo ":: $1 INSTALLED"
-			echo '============================================='
-			sleep 1
+      pause
 			break
 			;;
 		[nN] | [nN][oO])
-			echo '=================SKIPPING===================='
-			sleep 1
+      skip_msg
 			break
 			;;
 		*)
-			echo 'Please enter y/yes or n/no' >&2
+			smth >&2
 			;;
 		esac
 	done
@@ -165,20 +169,15 @@ rangit() {
 
       " >> $HOME/.config/ranger/rc.conf
 			echo ':: rc.conf confd'
-			echo '============================================='
-			sleep 1
-      ## i want to add it to bare repo
-      #cp ~/bashtest/.Xresources ~/
-			#echo ':: Xresrcs Cpd'
-			break
+			pause
+      break
 			;;
 		[nN] | [nN][oO])
-			echo '=================SKIPPING===================='
-			sleep 1
+      skip_msg
 			break
 			;;
 		*)
-			echo 'Neighbour Please' >&2
+			smth >&2
 			;;
 		esac
 	done
@@ -199,17 +198,17 @@ nvimit() {
 			sleep 1
       echo 'Remember running :MasonInstallAll after lazy downloads plugins'
       sleep 1
+      remove 'NvChad git folder' '~/.config/nvim/.git'
       echo ':: NvChad INSTALLED'
-			echo '============================================='
+      pause
 			break
 			;;
 		[nN] | [nN][oO])
-			echo '=================SKIPPING===================='
-			sleep 1
+      skip_msg
 			break
 			;;
 		*)
-			echo 'Neighbour Please' >&2
+			smth >&2
 			;;
 		esac
 	done
@@ -226,17 +225,15 @@ remove() {
 		[yY] | [yY][eE][sS])
 			rm -rf $2
 			echo ":: $1 REMOVED"
-			echo '============================================='
-			sleep 1
+      pause
 			break
 			;;
 		[nN] | [nN][oO])
-			echo '=================SKIPPING===================='
-			sleep 1
+      skip_msg
 			break
 			;;
 		*)
-			echo 'Please enter y/yes or n/no' >&2
+			smth >&2
 			;;
 		esac
 	done
@@ -247,24 +244,23 @@ remove() {
 
 buildit() {
 	while true; do
-		read -p "Do u want $1 ? Y/N " ANSWER
+		read -p "Do u want $1? Y/N " ANSWER
 		case $ANSWER in
 		[yY] | [yY][eE][sS])
 			git clone $2
 			cd $3
 			./install.sh $4
+      #remove $5 $6
 			cd ..
-			echo '============================================='
-			sleep 1
+      pause
 			break
 			;;
 		[nN] | [nN][oO])
-			echo '=================SKIPPING===================='
-			sleep 1
+      skip_msg
 			break
 			;;
 		*)
-			echo 'Nigga Please' >&2
+			smth >&2
 			;;
 		esac
 	done
@@ -274,7 +270,6 @@ buildit() {
 # Function to install zsh shit
 
 # echo 'source ~/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
-## maybe try to find better directory to clone to
 zshit() {
 	while true; do
 		read -p ":: Do u want powerlevel10k? Y/N " ANSWER
@@ -282,20 +277,16 @@ zshit() {
 		[yY] | [yY][eE][sS])
 			yayit 'zsh autosuggs/highlights?' 'zsh-autosuggestions zsh-syntax-highlighting'
 			git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.config/powerlevel10k
-			## I think there's no need to echo to .zshrc if I have it on bare repo
-      ## echo 'source ~/.config/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
 			echo ':: ZSH-itted'
-			echo '============================================='
-			sleep 1
+      pause
 			break
 			;;
 		[nN] | [nN][oO])
-			echo '=================SKIPPING===================='
-			sleep 1
+      skip_msg
 			break
 			;;
 		*)
-			echo 'Nigga Please' >&2
+			smth >&2
 			;;
 		esac
 	done
@@ -313,34 +304,35 @@ lyit() {
 			echo ':: Ly Installed'
 			sleep 1
 			sudo systemctl enable ly.service
-			#sudo systemctl start ly.service
-			echo ':: Ly Service enabled'
-			sleep 1
-			echo ':: Start Ly Service at will'
-			echo '============================================='
-			sleep 1
+      sudo systemctl status ly.service
+      pause
+      echo CASH Finished
+      echo '============================================='
+			sudo systemctl start ly.service
 			break
 			;;
 		[nN] | [nN][oO])
-			echo '=================SKIPPING===================='
-			sleep 1
+      skip_msg
 			break
 			;;
 		*)
-			echo 'Neighbour Please' >&2
+			smth >&2
 			;;
 		esac
 	done
 
 }
 
-##################################
-##################################
+###################################################################
+###################################################################
 ## Beginning of the actual script
 ##
 
 echo Welcome to CASH
 sleep 1
+
+## make sure .bashrc is copied and sourced 
+cp .bashrc ~/.bashrc 
 
 echo NOTE: Migrate needed, not included!!
 sleep 1
@@ -351,14 +343,12 @@ gitcfg
 
 getyay
 
-yayit 'Essentials' 'alacritty alsa-utils auto-cpufreq blueman bluez-utils bluez bluez-libs bspwm btop dunst dvtm fastfetch feh flameshot gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate mpd neovim network-manager-applet ncmpcpp ntfs-3g p7zip pacman-contrib pcmanfm-gtk3 picom polybar ranger reflector ripgrep rofi rsync sxiv sxhkd tldr ttc-iosevka ttf-nerd-fonts-symbols udisks2 ueberzug ufw vim xarchiver xclip' 
+yayit 'Essentials' 'alacritty alsa-utils auto-cpufreq blueman bluez-utils bluez bluez-libs bspwm btop dunst dvtm fastfetch feh flameshot gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate mpd neovim network-manager-applet ncmpcpp ntfs-3g p7zip pacman-contrib pcmanfm-gtk3 picom polybar ranger reflector ripgrep rofi rsync sxiv sxhkd tldr ttc-iosevka ttf-nerd-fonts-symbols udisks2 ueberzug ufw vim xarchiver xclip xorg' 
 ## something about bluez-libs already installed
 
 rangit
 
 nvimit
-
-remove 'NvChad git folder' '~/.config/nvim/.git'
 
 confirm 'gtk engines' 'gtk-engine-murrine gtk-engines' 'GTK ENGINES'
 
@@ -369,15 +359,19 @@ echo ':: Matcha Version: ' $(pacman -Q | grep matcha)
 remove 'Matcha folder' 'Matcha-gtk-theme'
 
 buildit 'Qogir Cursor' https://github.com/vinceliuice/Qogir-icon-theme Qogir-icon-theme '-c standard -t manjaro'
-if [ -e $HOME/.local/share/icons/Qogir-manjaro ]; then echo ':: Qogir Cursor installed'; else echo 'Something happened...'; fi
+if [ -e $HOME/.local/share/icons/Qogir-manjaro ]; then echo ':: Qogir Cursor installed'; else smth; fi
 remove 'Qogir folder' 'Qogir-icon-theme'
 
 buildit 'Tela Icons' https://github.com/vinceliuice/Tela-icon-theme Tela-icon-theme ''
 ## try yay tela-icon-theme
-if [ -e $HOME/.local/share/icons/Tela ]; then echo ':: Tela Icons installed'; else echo 'Something happened...'; fi
+if [ -e $HOME/.local/share/icons/Tela ]; then echo ':: Tela Icons installed'; else smth; fi
 remove 'Tela folder' 'Tela-icon-theme'
 
 zshit
+
+###
+# install confirm msg 
+# echo ' xxx installed'
 
 
 ####
@@ -396,9 +390,7 @@ zshit
 
 echo ':: NO BEEP and TOUCHPAD'
 sleep 1
-echo 'tryng echoin blacklist pcspkr and snd_pcsp >> /etc/modprobe.d/nobeep.conf'
-sleep 1 
-echo 'tryng copy /home/$USER/bashtest/30-touchpad.conf to /etc/X11/xorg.conf.d/'
+echo "tryng echoin 'blacklist pcspkr\nblacklist snd_pcsp' >> /etc/modprobe.d/nobeep.conf; copy /home/$USER/bashtest/30-touchpad.conf to /etc/X11/xorg.conf.d/"
 sleep 1 
 echo 'Remember exit the console'
 su 
@@ -406,72 +398,36 @@ su
 
 echo ':: Creating dir for Flameshot'
 mkdir -p ~/00/Pictures/Flameshot 
-if [ -e $HOME/00/Pictures/Flameshot/ ]; then echo 'Flameshot folder created'; else echo 'Something happened...'; fi
+if [ -e $HOME/00/Pictures/Flameshot/ ]; then echo 'Flameshot folder created'; else smth; fi
 sleep 1
-
-lyit
 
 confirm 'firefox?' 'firefox'
 
 yayit 'ardour/calf/musescore/nicotine/qbittorrent/vlc/bitwarden/bleachbit/timeshift/kdenlive/tenacity?' 'ardour calf musescore nicotine+ qbittorrent vlc bitwarden bleachbit timeshift kdenlive tenacity'
 
-
-echo '####### ATTENTION #######'
-sleep 1
-echo ':: We testing migration with functions instead of linear cmds'
-
-clone(){
-  echo :: Cloning dotfiles into bare repository @ home
-  git clone --bare https://github.com/cristian158/spweedy $HOME/.cfg
-  sleep 1 
-}
-
-if [ -e ~/.cfg ]; then echo ':: Dotfiles cloned into .cfg'; else echo ':: Something happen maybe'; fi
-
-config checkout
-
-echo :: If there are conflicting files, maybe delete them and run config checkout again
-
-echo :: Set flag for untracked files
-config config --local status.showUntrackedFiles no
-
-echo byeeeee
-
-echo '####### ATTENTION #######'
-
+echo '
 ###################
 ### LA MIGRA WEYY
 ###################
+'
 
-## Clone dotfiles into bare repository @ home
-echo :: Cloning dotfiles into bare repository @ home
+echo ':: Cloning dotfiles into bare repository @ home'
 git clone --bare https://github.com/cristian158/spweedy $HOME/.cfg
 sleep 1 
-## add when pertinent
-if [ -e ~/.cfg ]; then echo ':: Dotfiles cloned into .cfg'; else echo ':: Something happen maybe'; fi
 
-## Define alias in current shell scope
-echo :: Defining alias in current shell scope and addin it to .bashrc
-alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
-echo "alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'" >> $HOME/.bashrc
-sleep 1
+if [ -e ~/.cfg ]; then echo ':: Dotfiles cloned into .cfg'; else smth; fi
 
-## Checkout actual content from the bare repository to home
-echo :: Sourcing bashrc and checkout actual content from the bare repository to home after sourcing files
-source ~/.bashrc
 config checkout
 
 echo :: If there are conflicting files, maybe delete them and run config checkout again
 
-echo :: Set flag for untracked files
-config config --local status.showUntrackedFiles no
-
-echo :: byyyyyy
+echo :: Set config config --local status.showUntrackedFiles no
+# find right flag 
 
 
+lyit
 
-echo CASH Finished
-echo '============================================='
+
 
 
 #################
