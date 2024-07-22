@@ -333,6 +333,9 @@ sleep 1
 
 ## make sure .bashrc is copied and sourced 
 cp .bashrc ~/.bashrc 
+source ~/.bashrc
+
+### add mods to pacman.conf maybeee
 
 echo NOTE: Migrate needed, not included!!
 sleep 1
@@ -395,7 +398,7 @@ sleep 1
 echo 'Remember exit the console'
 su 
 
-
+cp ~/bashtest/.migrate ~/ 
 echo ':: Creating dir for Flameshot'
 mkdir -p ~/00/Pictures/Flameshot 
 if [ -e $HOME/00/Pictures/Flameshot/ ]; then echo 'Flameshot folder created'; else smth; fi
@@ -411,6 +414,7 @@ echo '
 ###################
 '
 
+cd 
 echo ':: Cloning dotfiles into bare repository @ home'
 git clone --bare https://github.com/cristian158/spweedy $HOME/.cfg
 sleep 1 
@@ -421,7 +425,7 @@ config checkout
 
 echo :: If there are conflicting files, maybe delete them and run config checkout again
 
-echo :: Set config config --local status.showUntrackedFiles no
+echo :: Set config config config --local status.showUntrackedFiles no
 # find right flag 
 
 

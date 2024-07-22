@@ -1,5 +1,6 @@
 echo $(find . -maxdepth 2 -type d) >> ALBUMS
-
+reflector --latest 50 --number 20 --sort score --save ...
+## edit /etc/makepkg.conf around line 53, MAKEFLAGS='j6', 6 cores when building stuff instead of 2
 
 #################
 ###   MKDIR   ###
