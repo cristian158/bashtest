@@ -1,5 +1,5 @@
 # enable debug mode, which will print each command as it's executed
-set -x
+#set -x
 
 ###################
 ###   ALIASES   ###
@@ -154,4 +154,4 @@ export PATH=/usr/local:$PATH
 #export HISTFILE="${XDG_STATE_HOME}"/bash/history
 #nvidia-settings --config="$XDG_CONFIG_HOME"/nvidia/settings
 PS1='[\u@\h \W]\$ '
-alias config='/usr/bin/git --git-dir=/home/spweedy/.cfg --work-tree=/home/spweedy'
+alias dotfiles='/usr/bin/git --git-dir=/home/$USER/.cfg --work-tree=/home/$USER'
