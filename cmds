@@ -147,7 +147,9 @@ $ sudo pacman -S linux                           // install latest stable kernel
 $ sudo pacman -Syu --ignore=vlc                 // ignore vlc temporarily
 $ sudo pacman -Syyu --overwrite "*"             // when 'exists in filesystem' while update
 $ pamac clean --keep 1				// clean cache, keeps latest version pkg ver
-
+$ pacman -Fy                                    // -F query files db, look for pkg owning certain file, etc
+                                                // -y refreshes pkg file db from server. 
+$ pacman -F pactl                               // shows list of pkgs related to pactl
 
 
 
