@@ -203,7 +203,7 @@ echo NOTE: Migrate needed, not included!!
 ## make sure .bashrc is copied and sourced 
 if cp /home/$USER/bashtest/.bashrc /home/$USER/.bashrc && source /home/$USER/.bashrc; then
     log "Bashrc copied and sourced successfully"
-    echo "alias dotfiles='/usr/bin/git --git-dir=home/.cfg --work-tree=home"
+    echo "alias dotfiles='/usr/bin/git --git-dir=/home/$USER/.cfg --work-tree=/home/$USER"
 else
     log "Error: Failed to copy or source .bashrc"
     exit 1
