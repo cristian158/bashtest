@@ -26,7 +26,8 @@ yes_no() {
         read -rp "$prompt (y/n): " answer
         case "$answer" in
             [yY]* ) $action; log "$prompt finished"; return 0;;
-            [nN]* ) log "$prompt skipped"; return 1;;
+            [nN]* ) log "$prompt skipped"; return 0;;
+	    # if N returns 1, the whole script finishes
             * ) echo "Please answer yes or no.";;
         esac
     done
@@ -42,6 +43,7 @@ exists() {
         fi
     else
         log ":: $2 not confirmed" 
+	return 0
     fi 
 }
 
@@ -56,7 +58,7 @@ getyay() {
         echo ':: Make development package updates permanently enabled' && yay -Y --devel --save
     else
         log "Error: Failed to install Yay"
-        return 1
+        return 0
     fi
 }
 
@@ -80,7 +82,7 @@ rangit() {
         echo ':: rc.conf confd'
     else
         log "Error: Failed to clone ranger_devicons"
-        return 1
+        return 0
     fi
 }
 
@@ -93,7 +95,7 @@ buildit() {
     local specs="$4"
     local file="$5"
     local trash="$6"
-    local extra="$7"
+    #local extra="$7"
     while true; do 
         read -rp "Do you want to install $name? (y/n): " answer
         case "$answer" in 
@@ -104,20 +106,20 @@ buildit() {
                   if ./install.sh $specs; then
                       cd ..
                       exists $file $name 
-                      $extra
+                      #$extra
                       rm -rf $trash 
                       log "$name finished"
                       return 0
                   else
                       log "Error: Failed to install $name"
-                      return 1
+                      return 0
                   fi
               else
                   log "Error: Failed to clone $repo"
-                  return 1
+                  return 0
               fi
               ;;
-            [nN]* ) log "$name skipped"; return 1;;
+            [nN]* ) log "$name skipped"; return 0;;
             * ) echo "Please answer yes or no.";;
          esac
     done
@@ -179,11 +181,11 @@ setup_dotfiles() {
             log "Dotfiles setup completed successfully"
         else
             log "Error: Failed to checkout dotfiles"
-            return 1
+            return 0
         fi
     else
         log "Error: Failed to clone dotfiles repository"
-        return 1
+        return 0
     fi
     
     # Add the alias to .bashrc for future use
@@ -223,7 +225,7 @@ yes_no "Essentials" "yay -S --needed alacritty alsa-utils auto-cpufreq blueman b
 
 yes_no "Rangit" rangit 
 
-buildit "NvChad" "https://github.com/NvChad/starter /home/$USER/.config/nvim --depth 1" "" "" "/home/$USER/.config/nvim/LICENSE" "/home/$USER/.config/nvim/.git"
+buildit "NvChad" "https://github.com/NvChad/starter /home/$USER/.config/nvim --depth 1" "/home/$USER/.config/nvim" "" "/home/$USER/.config/nvim/LICENSE" "/home/$USER/.config/nvim/.git"
 
 yes_no "Gtk engines" "yay -S --needed gtk-engine-murrine gtk-engines"
 
