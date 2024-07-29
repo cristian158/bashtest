@@ -8,7 +8,7 @@ CONFIG_DIR="$USER_HOME/.config"
 LOG_FILE="$BASHTEST_DIR/script.log"
 
 log() {
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | sudo tee -a "$LOG_FILE"
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
 }
 
 error() {
@@ -89,31 +89,40 @@ install_package() {
 main() {
     log "Welcome to CASH (Customized Arch System Helper)"
 
-    yes_no "Copy and source .bashrc" "cp '$BASHTEST_DIR/.bashrc' '$USER_HOME/.bashrc' && source '$USER_HOME/.bashrc'"
+    # Check if necessary files exist before copying
+    if [[ -f "$BASHTEST_DIR/.bashrc" ]]; then
+        yes_no "Copy and source .bashrc" "cp '$BASHTEST_DIR/.bashrc' '$USER_HOME/.bashrc' && source '$USER_HOME/.bashrc'"
+    else
+        log "Warning: $BASHTEST_DIR/.bashrc not found. Skipping."
+    fi
 
-    yes_no "Configure pacman" "sudo cp '$BASHTEST_DIR/pacman.conf' '/etc/pacman.conf'"
+    if [[ -f "$BASHTEST_DIR/pacman.conf" ]]; then
+        yes_no "Configure pacman" "sudo cp '$BASHTEST_DIR/pacman.conf' '/etc/pacman.conf'"
+    else
+        log "Warning: $BASHTEST_DIR/pacman.conf not found. Skipping."
+    fi
 
     yes_no "Perform full system update" "sudo pacman -Syu"
     yes_no "Install Yay" install_yay
 
     yes_no "Install essential packages" "yay -S --needed alacritty alsa-utils auto-cpufreq blueman bluez-utils bluez bluez-libs bspwm btop dunst dvtm fastfetch feh flameshot github-cli gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate mpd neovim network-manager-applet ncmpcpp ntfs-3g p7zip pacman-contrib pcmanfm-gtk3 picom polybar ranger reflector ripgrep rofi rsync sxiv sxhkd tldr ttc-iosevka ttf-nerd-fonts-symbols udisks2 ueberzug ufw vim xarchiver-gtk2 xclip xorg"
 
-    yes_no "Install Ranger DevIcons" "git clone https://github.com/alexanderjeurissen/ranger_devicons $CONFIG_DIR/ranger/plugins/ranger_devicons && ranger --copy-config=all && echo 'default_linemode devicons\nset preview_images true\nset preview_images_method ueberzug\nmap DD shell mv %s $USER_HOME/.local/share/Trash/files/' >> $CONFIG_DIR/ranger/rc.conf"
+    yes_no "Install Ranger DevIcons" "git clone https://github.com/alexanderjeurissen/ranger_devicons '$CONFIG_DIR/ranger/plugins/ranger_devicons' && ranger --copy-config=all && echo 'default_linemode devicons\nset preview_images true\nset preview_images_method ueberzug\nmap DD shell mv %s $USER_HOME/.local/share/Trash/files/' >> '$CONFIG_DIR/ranger/rc.conf'"
 
-    yes_no "Install NvChad" "install_package 'NvChad' 'https://github.com/NvChad/starter $CONFIG_DIR/nvim --depth 1' '$CONFIG_DIR/nvim' '' '$CONFIG_DIR/nvim/LICENSE' '$CONFIG_DIR/nvim/.git'"
-    yes_no "Install Matcha GTK theme" "install_package 'Matcha' 'https://github.com/vinceliuice/Matcha-gtk-theme' 'Matcha-gtk-theme' '-c dark -t sea' '' './Matcha-gtk-theme'"
-    yes_no "Install Qogir icon theme" "install_package 'Qogir' 'https://github.com/vinceliuice/Qogir-icon-theme' 'Qogir-icon-theme' '-c standard -t manjaro' '$USER_HOME/.local/share/icons/Qogir-manjaro' './Qogir-icon-theme'"
-    yes_no "Install Tela icon theme" "install_package 'Tela' 'https://github.com/vinceliuice/Tela-icon-theme' 'Tela-icon-theme' '' '$USER_HOME/.local/share/icons/Tela' './Tela-icon-theme'"
-    yes_no "Install Zsh with Powerlevel10k" "install_package 'Zsh' 'https://github.com/romkatv/powerlevel10k.git $CONFIG_DIR/powerlevel10k --depth=1' '' '' '' ''"
+    yes_no "Install NvChad" "git clone https://github.com/NvChad/NvChad '$CONFIG_DIR/nvim' --depth 1 && nvim"
+    yes_no "Install Matcha GTK theme" "git clone https://github.com/vinceliuice/Matcha-gtk-theme.git && (cd Matcha-gtk-theme && ./install.sh -c dark -t sea) && rm -rf Matcha-gtk-theme"
+    yes_no "Install Qogir icon theme" "git clone https://github.com/vinceliuice/Qogir-icon-theme.git && (cd Qogir-icon-theme && ./install.sh -c standard -t manjaro) && rm -rf Qogir-icon-theme"
+    yes_no "Install Tela icon theme" "git clone https://github.com/vinceliuice/Tela-icon-theme.git && (cd Tela-icon-theme && ./install.sh) && rm -rf Tela-icon-theme"
+    yes_no "Install Zsh with Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git '$USER_HOME/.powerlevel10k' && echo 'source ~/.powerlevel10k/powerlevel10k.zsh-theme' >> '$USER_HOME/.zshrc'"
 
     yes_no "Install GTK engines" "yay -S --needed gtk-engine-murrine gtk-engines"
     yes_no "Install Zsh addons" "yay -S --needed zsh-autosuggestions zsh-syntax-highlighting"
 
     yes_no "Configure system files" "
-        sudo cp $BASHTEST_DIR/nobeep.conf /etc/modprobe.d/nobeep.conf &&
-        sudo cp $BASHTEST_DIR/30-touchpad.conf /etc/X11/xorg.conf.d/30-touchpad &&
-        cp $BASHTEST_DIR/.migrate $USER_HOME/ &&
-        mkdir -p $USER_HOME/00/Pictures/Flameshot
+        [[ -f '$BASHTEST_DIR/nobeep.conf' ]] && sudo cp '$BASHTEST_DIR/nobeep.conf' '/etc/modprobe.d/nobeep.conf';
+        [[ -f '$BASHTEST_DIR/30-touchpad.conf' ]] && sudo cp '$BASHTEST_DIR/30-touchpad.conf' '/etc/X11/xorg.conf.d/30-touchpad';
+        [[ -f '$BASHTEST_DIR/.migrate' ]] && cp '$BASHTEST_DIR/.migrate' '$USER_HOME/';
+        mkdir -p '$USER_HOME/00/Pictures/Flameshot'
     "
 
     yes_no "Setup dotfiles" setup_dotfiles
