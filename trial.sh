@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+# Strict error handling
+# set -e just exits on error
 set -euo pipefail
 
 # Logging function
@@ -162,17 +165,17 @@ setup_dotfiles() {
     # Initialize the bare repository
     if git clone --bare https://github.com/cristian158/spweedy $dotfiles_dir; then
         # Define the alias in the current shell scope
-        alias dotfiles='/usr/bin/git --git-dir=/home/$USER/.cfg/ --work-tree=/home/$USER/'
+        alias dots='/usr/bin/git --git-dir=/home/$USER/.cfg/ --work-tree=/home/$USER/'
         
         # Backup existing dotfiles
         mkdir -p $dotfiles_backup
 	## egrep is obsolescent, using grep -E
         #dotfiles checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | xargs -I{} mv {} $dotfiles_backup/{}
-        dotfiles checkout 2>&1 | grep -E "\s+\." | awk {'print $1'} | xargs -I{} mv {} $dotfiles_backup/{}
+        dots checkout 2>&1 | grep -E "\s+\." | awk {'print $1'} | xargs -I{} mv {} $dotfiles_backup/{}
         
         # Checkout the actual content from the bare repository to home
-        if dotfiles checkout; then
-            dotfiles config --local status.showUntrackedFiles no
+        if dots checkout; then
+            dots config --local status.showUntrackedFiles no
             log "Dotfiles setup completed successfully"
         else
             log "Error: Failed to checkout dotfiles"
@@ -184,7 +187,7 @@ setup_dotfiles() {
     fi
     
     # Add the alias to .bashrc for future use
-    echo "alias dotfiles='/usr/bin/git --git-dir=/home/$USER/.cfg/ --work-tree=/home/$USER/'" >> /home/$USER/.bashrc
+    echo "alias dots='/usr/bin/git --git-dir=/home/$USER/.cfg/ --work-tree=/home/$USER/'" >> /home/$USER/.bashrc
 }
 
 ###########################################################################
@@ -203,7 +206,7 @@ echo NOTE: Migrate needed, not included!!
 ## make sure .bashrc is copied and sourced 
 if cp /home/$USER/bashtest/.bashrc /home/$USER/.bashrc && source /home/$USER/.bashrc; then
     log "Bashrc copied and sourced successfully"
-    echo "alias dotfiles='/usr/bin/git --git-dir=/home/$USER/.cfg --work-tree=/home/$USER"
+    echo "alias dots='/usr/bin/git --git-dir=/home/$USER/.cfg --work-tree=/home/$USER"
 else
     log "Error: Failed to copy or source .bashrc"
     exit 1

@@ -154,4 +154,4 @@ export PATH=/usr/local:$PATH
 #export HISTFILE="${XDG_STATE_HOME}"/bash/history
 #nvidia-settings --config="$XDG_CONFIG_HOME"/nvidia/settings
 PS1='[\u@\h \W]\$ '
-alias dotfiles='/usr/bin/git --git-dir=/home/$USER/.cfg --work-tree=/home/$USER'
+alias dots='/usr/bin/git --git-dir=/home/$USER/.cfg --work-tree=/home/$USER'
