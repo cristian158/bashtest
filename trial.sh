@@ -51,10 +51,38 @@ install_yay() {
     log "Installing Yay"
     git clone https://aur.archlinux.org/yay.git && 
     (cd yay && makepkg -si) &&
+    ## cd cmd instide () to avoid changing srript's dire
     rm -rf ./yay &&
     yay -Y --gendb &&
     yay -Syu --devel &&
     yay -Y --devel --save
+}
+
+
+setup_batnotify() {
+    log "Setting up battery monitor"
+    
+    cat > $USER_HOME/.local/bin/batnotify.sh << 'EOL'
+#!/bin/bash
+
+while true; do
+    battery_level=$(cat /sys/class/power_supply/BAT*/capacity)
+    if [ $battery_level -le 7 ]; then
+        notify-send -u critical "Low Battery" "Battery level is ${battery_level}%"
+        sleep_time=$((battery_level * 10))
+    else
+        sleep_time=300
+    fi
+    sleep $sleep_time
+done
+EOL
+
+    chmod +x $USER_HOME/.local/bin/batnotify.sh
+    
+    # Add to .xinitrc to start on login
+    echo "$USER_HOME/.local/bin/battery_monitor.sh &" >> $USER_HOME/.xinitrc
+    
+    log "Battery monitor setup complete"
 }
 
 setup_dotfiles() {
@@ -92,7 +120,8 @@ main() {
 
     yes_no "Install essential packages" "yay -S --needed alacritty alsa-utils auto-cpufreq blueman bluez-utils bluez bluez-libs bspwm btop dunst dvtm fastfetch feh flameshot github-cli gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate mpd neovim network-manager-applet ncmpcpp ntfs-3g p7zip pacman-contrib pcmanfm-gtk3 picom polybar ranger reflector ripgrep rofi rsync sxiv sxhkd tldr ttc-iosevka ttf-nerd-fonts-symbols udisks2 ueberzug ufw vim xarchiver-gtk2 xclip xorg"
 
-    yes_no "Install Ranger DevIcons" "git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\" && ranger --copy-config=all && echo 'default_linemode devicons\nset preview_images true\nset preview_images_method ueberzug\nmap DD shell mv %s $USER_HOME/.local/share/Trash/files/' >> \"$CONFIG_DIR/ranger/rc.conf\""
+    yes_no "Install Ranger DevIcons" "git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\" && ranger --copy-config=all"
+    # && echo 'default_linemode devicons\nset preview_images true\nset preview_images_method ueberzug\nmap DD shell mv %s $USER_HOME/.local/share/Trash/files/' >> \"$CONFIG_DIR/ranger/rc.conf\"
 
     yes_no "Install NvChad" "git clone https://github.com/NvChad/NvChad \"$CONFIG_DIR/nvim\" --depth 1 && nvim"
     yes_no "Install Matcha GTK theme" "git clone https://github.com/vinceliuice/Matcha-gtk-theme.git && (cd Matcha-gtk-theme && ./install.sh -c dark -t sea) && rm -rf Matcha-gtk-theme"
@@ -109,7 +138,7 @@ main() {
         [ -f \"$BASHTEST_DIR/.migrate\" ] && cp \"$BASHTEST_DIR/.migrate\" \"$USER_HOME/\";
         mkdir -p \"$USER_HOME/00/Pictures/Flameshot\"
     "
-
+    yes_no "Setup battery monitor" "setup_batnotify"
     yes_no "Setup dotfiles" "setup_dotfiles"
 
     log "Script execution completed. Check the log for details on which operations were performed or skipped."
