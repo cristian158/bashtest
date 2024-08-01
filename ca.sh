@@ -58,7 +58,6 @@ install_yay() {
     yay -Y --devel --save
 }
 
-
 setup_batnotify() {
     log "Setting up battery monitor"
     
