@@ -58,6 +58,7 @@ install_yay() {
     yay -Y --devel --save
 }
 
+# Func for low bat script
 setup_batnotify() {
     log "Setting up battery monitor"
     
