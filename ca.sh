@@ -67,14 +67,19 @@ setup_batnotify() {
 
 while true; do
     battery_level=$(cat /sys/class/power_supply/BAT*/capacity)
-    if [ $battery_level -le 7 ]; then
+    battery_status=$(cat /sys/class/power_supply/BAT*/status)
+
+    # using [[ instead of [ for better syntax, to avoid issues w/ empty variables
+    if [[ "$battery_status" == "Discharging" && "$battery_level" -gt 0 && "$battery_level" -le 7 ]]; then
         notify-send -u critical "Low Battery" "Battery level is ${battery_level}%"
-        sleep_time=$((battery_level * 10))
+        sleep_time=$((battery_level * 10))  # Sleep longer when battery is higher
     else
-        sleep_time=300
+        sleep_time=300  # 5 minutes
     fi
+
     sleep $sleep_time
 done
+
 EOL
 
     chmod +x $USER_HOME/.local/bin/batnotify.sh
