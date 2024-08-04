@@ -127,6 +127,7 @@ EOL
     chmod +x "$USER_HOME/.local/bin/batnotify.sh"
     
     # Create a systemd user service
+    # now it doesn't need to be in .xinitrc
     mkdir -p "$USER_HOME/.config/systemd/user/"
     cat > "$USER_HOME/.config/systemd/user/batnotify.service" << EOL
 [Unit]
