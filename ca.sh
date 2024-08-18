@@ -1,5 +1,8 @@
 #!/bin/bash
 
+## TODO
+## maybe add rmlint and rmlint-shredder (gui)
+
 set -euo pipefail
 
 USER_HOME=$HOME
@@ -242,7 +245,7 @@ main() {
     yes_no "Install base packages" "yay -S --needed base-devel git curl wget"
     yes_no "Install window manager and utilities" "yay -S --needed bspwm sxhkd polybar dunst rofi feh picom"
     yes_no "Install terminal" "yay -S --needed alacritty"
-    yes_no "Install system utilities" "yay -S --needed alsa-utils bluez bluez-utils network-manager-applet ufw"
+    yes_no "Install system utilities" "yay -S --needed alsa-utils bluez bluez-utils network-manager-applet xclip ufw"
     yes_no "Install file managers and archivers" "yay -S --needed ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
     yes_no "Install text editors and development tools" "yay -S --needed neovim vim github-cli"
     yes_no "Install media tools" "yay -S --needed mpd ncmpcpp sxiv"

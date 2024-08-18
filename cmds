@@ -1,6 +1,12 @@
-echo $(find . -maxdepth 2 -type d) >> ALBUMS
-reflector --latest 50 --number 20 --sort score --save ...
-## edit /etc/makepkg.conf around line 53, MAKEFLAGS='j6', 6 cores when building stuff instead of 2
+
+#################
+###   DEVICES ###
+#################
+
+$ sudo mount -t ntfs-3g /dev/sdxy /run/dribe
+
+
+
 
 #################
 ###   MKDIR   ###
@@ -28,6 +34,7 @@ $ rsync -vahP /source/ /to/destiny/                // -v verbose
                                                    // -h sizes in human-readable format
                                                    // -P progress
         --ignore-existing
+        --partial                                  // after interrupted transfer, resume it where it left off
 
 /source                                            // sync 'source' folder and content
 /source/                                           // sync 'source' content
@@ -51,7 +58,6 @@ $ shred -vufzn 4                                 // -v verbose
                                                  // -n number of iterations (default is 3)
                                                  // -z final overwrite with zeros
                                                  // no flags, overwrite 3 times
-
 
 
 ###############
@@ -92,6 +98,8 @@ $ fg							       // go back to htop
 $ inxi -Fx						        // complete fastfetchish
 
 ## NETWORK
+# test-ipv6.com
+
 $ inxi -Na					            // -N network devices, driver
                                         // -a advanced sys admin data
 
@@ -123,8 +131,10 @@ $ nmcli device                                   // list network devices and sta
 $ nmcli device wifi connect <SSID_or_BSSID> password <password>
 $ nmcli connection                               // list connection historial
 $ lspci | grep -i net                            // list network controllers
-
-
+$ python3 -m http.server 8000                    // takes dir's content and serves it at localhost:8000
+reflector --latest 50 --number 20 --sort score --save ...
+#still have to try next one:
+$ mtr archlinux.org                              // investigate net connex; mixes funcx of ping and traceroute
 
 ##################
 ###   KERNEL   ###
@@ -152,8 +162,36 @@ $ pacman -Fy                                    // -F query files db, look for p
 $ pacman -F pactl                               // shows list of pkgs related to pactl
 
 
+#####################
+###     ERRORS    ###
+#####################
 
-#############################################################################
+#########################
+#### Database Synch Error
+
+error: GPGME error: No data
+error: failed to synchronize all databases (invalid or corrupted database (PGP signature))
+ -> error refreshing databases - exit status 1
+
+### sudo rm -R /var/lib/pacman/sync 
+### sudo pacman -Syu
+
+
+####################
+### No dirmngr error 
+
+:: Importing keys with gpg... 
+gpg: keyblock resource '/home/spweedy/.local/share/gnupg/pubring.kbx': No such file or directory
+gpg: failed to create temporary file '/home/spweedy/.local/share/gnupg/.#lk0x000055a59a8d8f30.triton.29016': No such file or directory
+gpg: can't connect to the dirmngr: No such file or directory
+gpg: keyserver receive failed: No dirmngr
+ -> problem importing keys
+
+### create gnupg folder 
+mkdir .local/share/gnupg    
+
+
+###############################################################################################################################
 
 
 $ nohup <SOMEPKG> &                             // start from/indie of terminal
@@ -197,31 +235,6 @@ $ cat error.log | sort | uniq                   // cat to read file
 
 $ chown -R xxx: xxx                             // change ownership, after recylcing home dir for instance
 
-#####################
-###     ERRORS    ###
-#####################
-
-#########################
-#### Database Synch Error
-
-error: GPGME error: No data
-error: failed to synchronize all databases (invalid or corrupted database (PGP signature))
- -> error refreshing databases - exit status 1
-
-### sudo rm -R /var/lib/pacman/sync 
-### sudo pacman -Syu
-
-
-####################
-### No dirmngr error 
-
-:: Importing keys with gpg... 
-gpg: keyblock resource '/home/spweedy/.local/share/gnupg/pubring.kbx': No such file or directory
-gpg: failed to create temporary file '/home/spweedy/.local/share/gnupg/.#lk0x000055a59a8d8f30.triton.29016': No such file or directory
-gpg: can't connect to the dirmngr: No such file or directory
-gpg: keyserver receive failed: No dirmngr
- -> problem importing keys
-
-### create gnupg folder 
-mkdir .local/share/gnupg    
+echo $(find . -maxdepth 2 -type d) >> ALBUMS
+## edit /etc/makepkg.conf around line 53, MAKEFLAGS='j6', 6 cores when building stuff instead of 2
 
