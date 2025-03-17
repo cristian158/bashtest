@@ -82,6 +82,7 @@ backup_conflicting_files() {
     return 0
 }
 
+
 # Function to checkout dotfiles with proper error handling
 checkout_dotfiles() {
     log_info "Checking out dotfiles from repository"
@@ -91,6 +92,19 @@ checkout_dotfiles() {
         return 0
     else
         log_warning "Checkout failed due to conflicting files"
+        
+        # Check if we're running in non-interactive mode (from ca.sh AUTO_MODE)
+        if [ -n "${NONINTERACTIVE:-}" ]; then
+            log_info "Running in non-interactive mode, automatically backing up conflicting files"
+            backup_conflicting_files
+            if dots checkout; then
+                log_success "Checkout successful after backup"
+                return 0
+            else
+                handle_error "Checkout failed even after backup" "exit"
+            fi
+            return 0
+        fi
         
         # Ask user how to handle conflicts
         echo

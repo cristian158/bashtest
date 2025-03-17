@@ -83,6 +83,13 @@ Customized Arch System Helper
 "
 }
 
+# Add flag file to indicate ca.sh completion
+    # Create a flag file to indicate ca.sh has been run
+    if [ "$AUTO_MODE" = true ]; then
+        touch "$USER_HOME/.ca_sh_completed"
+        log "Created flag file to indicate ca.sh completion"
+    fi
+
 # Configure sudo to not require password in AUTO_MODE
 setup_auto_mode() {
     log "Setting up auto mode (passwordless sudo)"
@@ -134,15 +141,14 @@ create_noninteractive_migrate() {
         return 1
     fi
     
-    # Create a modified version that automatically selects option 1 (backup) for conflicts
-    cat "$USER_HOME/.migrate" | sed 's/read -p "Enter your choice \[1-3\]: " choice/choice=1/' > "$USER_HOME/.migrate_auto"
+    # Create a modified version that sets NONINTERACTIVE environment variable
+    cat "$USER_HOME/.migrate" | sed '1s/^/#!/usr\/bin\/env bash\nNONINTERACTIVE=1\n/' | grep -v '^#!/usr/bin/env bash' > "$USER_HOME/.migrate_auto"
     
     chmod +x "$USER_HOME/.migrate_auto"
     log "Created non-interactive .migrate_auto script"
     
     return 0
 }
-
 yes_no() {
     local prompt="$1"
     local action="$2"
@@ -179,7 +185,7 @@ yes_no() {
     done
     return 0
 }
-
+# 5. Modify the install_yay function to use --noconfirm flags in AUTO_MODE
 install_yay() {
     log "Installing Yay"
     
@@ -195,9 +201,18 @@ install_yay() {
         return 1
     fi
     
-    if ! (cd "$TEMP_DIR/yay" && makepkg -si); then
-        error "Failed to build and install Yay"
-        return 1
+    if [ "$AUTO_MODE" = true ]; then
+        # Non-interactive installation in AUTO_MODE
+        if ! (cd "$TEMP_DIR/yay" && makepkg -si --noconfirm); then
+            error "Failed to build and install Yay"
+            return 1
+        fi
+    else
+        # Regular interactive installation
+        if ! (cd "$TEMP_DIR/yay" && makepkg -si); then
+            error "Failed to build and install Yay"
+            return 1
+        fi
     fi
     
     if ! command -v yay &> /dev/null; then
@@ -210,9 +225,17 @@ install_yay() {
         return 1
     fi
     
-    if ! yay -Syu --devel; then
-        error "Failed to update system with Yay"
-        return 1
+    if [ "$AUTO_MODE" = true ]; then
+        # Non-interactive updates in AUTO_MODE
+        if ! yay -Syu --devel --noconfirm; then
+            error "Failed to update system with Yay"
+            return 1
+        fi
+    else
+        if ! yay -Syu --devel; then
+            error "Failed to update system with Yay"
+            return 1
+        fi
     fi
     
     if ! yay -Y --devel --save; then
@@ -433,19 +456,31 @@ setup_dotfiles() {
     return 0
 }
 
+# 6. Modify setup_zsh function to use --noconfirm flags in AUTO_MODE
 setup_zsh() {
     log "Setting up Zsh and related tools"
     
-    yes_no "Install Zsh" "yay -S --needed zsh"
-    
-    yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.powerlevel10k\" && echo 'source ~/.powerlevel10k/powerlevel10k.zsh-theme' >> \"$USER_HOME/.zshrc\""
-    
-    yes_no "Install Zsh addons" "yay -S --needed zsh-autosuggestions zsh-syntax-highlighting"
-    
-    yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
+    if [ "$AUTO_MODE" = true ]; then
+        yes_no "Install Zsh" "yay -S --needed --noconfirm zsh"
+        
+        yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.powerlevel10k\" && echo 'source ~/.powerlevel10k/powerlevel10k.zsh-theme' >> \"$USER_HOME/.zshrc\""
+        
+        yes_no "Install Zsh addons" "yay -S --needed --noconfirm zsh-autosuggestions zsh-syntax-highlighting"
+        
+        yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
+    else
+        yes_no "Install Zsh" "yay -S --needed zsh"
+        
+        yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.powerlevel10k\" && echo 'source ~/.powerlevel10k/powerlevel10k.zsh-theme' >> \"$USER_HOME/.zshrc\""
+        
+        yes_no "Install Zsh addons" "yay -S --needed zsh-autosuggestions zsh-syntax-highlighting"
+        
+        yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
+    fi
     
     log "Zsh setup completed"
 }
+
 
 cleanup() {
     log "Cleaning up temporary files"
@@ -463,6 +498,7 @@ main() {
         case "$1" in
             --auto|a)
                 AUTO_MODE=true
+                RUN_MIGRATE=true
                 log "Running in automatic mode (god mode with elevated privileges)"
                 shift
                 ;;
@@ -486,13 +522,27 @@ main() {
         log "Please run as a normal user. The script will use sudo for commands that need root privileges."
         exit 1
     fi
-    
-    # Set up auto mode if requested
+# 1. Set RUN_MIGRATE=true by default when AUTO_MODE is enabled (already applied)
+# 2. Add automatic creation of non-interactive migrate script and bypass sudo check in AUTO_MODE
+# Set up auto mode if requested 
     if [ "$AUTO_MODE" = true ]; then
         if ! setup_auto_mode; then
             log "Warning: Failed to set up auto mode, continuing with regular sudo"
         fi
+        # Create non-interactive migrate script in auto mode
+        create_noninteractive_migrate
     fi
+    
+    # Check if sudo is available and the user has sudo privileges
+    if ! check_sudo; then
+        if [ "$AUTO_MODE" = true ]; then
+            log "Some operations may fail without sudo privileges, continuing anyway in AUTO_MODE"
+        else
+            log "Some operations may fail without sudo privileges"
+            yes_no "Continue without sudo privileges?" "true" || exit 1
+        fi
+    fi
+
     
     # Check if sudo is available and the user has sudo privileges
     if ! check_sudo; then
@@ -514,18 +564,35 @@ main() {
         yes_no "Configure pacman" "sudo_if_needed cp \"$BASHTEST_DIR/pacman.conf\" \"/etc/pacman.conf\""
     fi
 
-    yes_no "Perform full system update" "sudo_if_needed pacman -Syu"
-    yes_no "Install Yay" "install_yay"
+# 3. Add --noconfirm flags to all pacman and yay commands in AUTO_MODE
+    # In AUTO_MODE, we'll use --noconfirm for pacman and yay to avoid prompts
+    if [ "$AUTO_MODE" = true ]; then
+        yes_no "Perform full system update" "sudo_if_needed pacman -Syu --noconfirm"
+        yes_no "Install Yay" "install_yay"
 
-    # Split package installation into groups
-    yes_no "Install base packages" "yay -S --needed base-devel git curl wget"
-    yes_no "Install window manager and utilities" "yay -S --needed bspwm sxhkd polybar dunst rofi feh picom"
-    yes_no "Install terminal" "yay -S --needed alacritty"
-    yes_no "Install system utilities" "yay -S --needed alsa-utils bluez bluez-utils network-manager-applet xclip ufw"
-    yes_no "Install file managers and archivers" "yay -S --needed ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
-    yes_no "Install text editors and development tools" "yay -S --needed neovim vim github-cli"
-    yes_no "Install media tools" "yay -S --needed mpd ncmpcpp sxiv"
-    yes_no "Install fonts and themes" "yay -S --needed ttf-iosevka ttf-nerd-fonts-symbols"
+        # Split package installation into groups with --noconfirm
+        yes_no "Install base packages" "yay -S --needed --noconfirm base-devel git curl wget"
+        yes_no "Install window manager and utilities" "yay -S --needed --noconfirm bspwm sxhkd polybar dunst rofi feh picom"
+        yes_no "Install terminal" "yay -S --needed --noconfirm alacritty"
+        yes_no "Install system utilities" "yay -S --needed --noconfirm alsa-utils bluez bluez-utils network-manager-applet xclip ufw"
+        yes_no "Install file managers and archivers" "yay -S --needed --noconfirm ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
+        yes_no "Install text editors and development tools" "yay -S --needed --noconfirm neovim vim github-cli"
+        yes_no "Install media tools" "yay -S --needed --noconfirm mpd ncmpcpp sxiv"
+        yes_no "Install fonts and themes" "yay -S --needed --noconfirm ttf-iosevka ttf-nerd-fonts-symbols"
+    else
+        yes_no "Perform full system update" "sudo_if_needed pacman -Syu"
+        yes_no "Install Yay" "install_yay"
+
+        # Split package installation into groups
+        yes_no "Install base packages" "yay -S --needed base-devel git curl wget"
+        yes_no "Install window manager and utilities" "yay -S --needed bspwm sxhkd polybar dunst rofi feh picom"
+        yes_no "Install terminal" "yay -S --needed alacritty"
+        yes_no "Install system utilities" "yay -S --needed alsa-utils bluez bluez-utils network-manager-applet xclip ufw"
+        yes_no "Install file managers and archivers" "yay -S --needed ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
+        yes_no "Install text editors and development tools" "yay -S --needed neovim vim github-cli"
+        yes_no "Install media tools" "yay -S --needed mpd ncmpcpp sxiv"
+        yes_no "Install fonts and themes" "yay -S --needed ttf-iosevka ttf-nerd-fonts-symbols"
+    fi
 
     if check_dir_exists "$CONFIG_DIR/ranger/plugins"; then
         yes_no "Install Ranger DevIcons" "git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\" && ranger --copy-config=all"
@@ -538,7 +605,12 @@ main() {
     yes_no "Install Qogir icon theme" "git clone https://github.com/vinceliuice/Qogir-icon-theme.git \"$TEMP_DIR/Qogir-icon-theme\" && (cd \"$TEMP_DIR/Qogir-icon-theme\" && ./install.sh -c standard -t manjaro)"
     yes_no "Install Tela icon theme" "git clone https://github.com/vinceliuice/Tela-icon-theme.git \"$TEMP_DIR/Tela-icon-theme\" && (cd \"$TEMP_DIR/Tela-icon-theme\" && ./install.sh)"
 
-    yes_no "Install GTK engines" "yay -S --needed gtk-engine-murrine gtk-engines"
+# 4. Add --noconfirm flag to GTK engines installation in AUTO_MODE
+    if [ "$AUTO_MODE" = true ]; then
+        yes_no "Install GTK engines" "yay -S --needed --noconfirm gtk-engine-murrine gtk-engines"
+    else
+        yes_no "Install GTK engines" "yay -S --needed gtk-engine-murrine gtk-engines"
+    fi
 
     # Setup Zsh and related tools
     setup_zsh
