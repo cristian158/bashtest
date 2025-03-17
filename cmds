@@ -197,6 +197,10 @@ mkdir .local/share/gnupg
 $ nohup <SOMEPKG> &                             // start from/indie of terminal
 
 $ xdg-open file.txt                             // open file
+$ xdg-mime query filetype file.pdf              // get filetype
+$ xdg-mime query default application/pdf        // ask default pdf app 
+$ xdg-mime default some_app.desktop application/pdf // set some_app as default pdf
+                                                    // if .desktop doesnt exist, create in /usr/share/applications/
 
 $ /bin/ls                                       // outputs original ls w/o aliases
 $ /bin/ls | entr -s 'firefox localhost:3000'
@@ -238,3 +242,5 @@ $ chown -R xxx: xxx                             // change ownership, after recyl
 echo $(find . -maxdepth 2 -type d) >> ALBUMS
 ## edit /etc/makepkg.conf around line 53, MAKEFLAGS='j6', 6 cores when building stuff instead of 2
 
+
+$ find . -name "*.asd" -type f -delete          // find all asd files in this tree and delete them

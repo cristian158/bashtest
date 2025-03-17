@@ -3,14 +3,25 @@
 ## TODO
 ## maybe add rmlint and rmlint-shredder (gui)
 
-set -euo pipefail
+## removed the e flag to prevent the script from exiting on errors
+set -uo pipefail
+
+# Validate essential environment variables
+if [ -z "${HOME:-}" ]; then
+    echo "ERROR: HOME environment variable is not set"
+    exit 1
+fi
 
 USER_HOME=$HOME
 BASHTEST_DIR="$USER_HOME/bashtest"
 CONFIG_DIR="$USER_HOME/.config"
 LOG_FILE="$BASHTEST_DIR/script.log"
+# AUTO_MODE true --> script run automatically, execute all operations no asking for confirmation
 AUTO_MODE=false
 TEMP_DIR="/tmp/temp_cash"
+
+# Ensure log directory exists
+mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
 
 log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
@@ -19,6 +30,22 @@ log() {
 error() {
     log "ERROR: $1"
     return 1
+}
+
+check_file_exists() {
+    if [ ! -f "$1" ]; then
+        log "Warning: File $1 does not exist"
+        return 1
+    fi
+    return 0
+}
+
+check_dir_exists() {
+    if [ ! -d "$1" ]; then
+        log "Warning: Directory $1 does not exist"
+        return 1
+    fi
+    return 0
 }
 
 print_banner() {
@@ -43,9 +70,9 @@ yes_no() {
         if eval "$action"; then
             log "$prompt - Completed"
         else
-            log "$prompt - Failed, but continuing..."
+            log "$prompt - Failed and continuing..."
         fi
-        return
+        return 0
     fi
 
     while true; do
@@ -55,7 +82,7 @@ yes_no() {
                 if eval "$action"; then
                     log "$prompt - Completed"
                 else
-                    log "$prompt - Failed, but continuing..."
+                    log "$prompt - Failed and continuing..."
                 fi
                 ;;
             n|no) 
@@ -65,15 +92,51 @@ yes_no() {
         esac
         break
     done
+    return 0
 }
 
 install_yay() {
     log "Installing Yay"
-    git clone https://aur.archlinux.org/yay.git "$TEMP_DIR/yay" && 
-    (cd "$TEMP_DIR/yay" && makepkg -si) &&
-    yay -Y --gendb &&
-    yay -Syu --devel &&
-    yay -Y --devel --save
+    
+    mkdir -p "$TEMP_DIR" || { error "Failed to create temporary directory"; return 1; }
+    
+    if [ -d "$TEMP_DIR/yay" ]; then
+        log "Removing existing Yay directory"
+        rm -rf "$TEMP_DIR/yay" || error "Failed to remove existing Yay directory"
+    fi
+    
+    if ! git clone https://aur.archlinux.org/yay.git "$TEMP_DIR/yay"; then
+        error "Failed to clone Yay repository"
+        return 1
+    fi
+    
+    if ! (cd "$TEMP_DIR/yay" && makepkg -si); then
+        error "Failed to build and install Yay"
+        return 1
+    fi
+    
+    if ! command -v yay &> /dev/null; then
+        error "Yay installation failed - command not found"
+        return 1
+    fi
+    
+    if ! yay -Y --gendb; then
+        error "Failed to generate Yay database"
+        return 1
+    fi
+    
+    if ! yay -Syu --devel; then
+        error "Failed to update system with Yay"
+        return 1
+    fi
+    
+    if ! yay -Y --devel --save; then
+        error "Failed to save Yay development settings"
+        return 1
+    fi
+    
+    log "Yay installation completed successfully"
+    return 0
 }
 
 configure_system_files() {
@@ -84,12 +147,27 @@ configure_system_files() {
         ["$BASHTEST_DIR/nobeep.conf"]="/etc/modprobe.d/nobeep.conf:Disable PC speaker beep"
         ["$BASHTEST_DIR/30-touchpad.conf"]="/etc/X11/xorg.conf.d/30-touchpad:Touchpad configuration"
         ["$BASHTEST_DIR/.migrate"]="$USER_HOME/.migrate:Migration file"
-        # file to avoid annoying noise while audio paused
-        ["$BASHTEST_DIR/audio_disable_powersave.conf"]="/etc/modprobe.d/audio_disable_powersave.conf:Disable Audio Powersave mode"
+        ["$BASHTEST_DIR/audio_disable_powersave.conf"]="/etc/modprobe.d/audio_disable_powersave.conf: Disable Audio Powersave mode"
     )
 
     for source in "${!file_ops[@]}"; do
         IFS=':' read -r destination description <<< "${file_ops[$source]}"
+        
+        if ! check_file_exists "$source"; then
+            log "Skipping $description - source file not found"
+            continue
+        fi
+        
+        # Create destination directory if it doesn't exist
+        dest_dir=$(dirname "$destination")
+        if [ ! -d "$dest_dir" ]; then
+            if ! mkdir -p "$dest_dir"; then
+                error "Failed to create directory $dest_dir for $description"
+                continue
+            fi
+        fi
+        
+        # Copy file with proper error handling
         if cp "$source" "$destination"; then
             if [[ -f "$destination" ]]; then
                 log "Successfully copied $description to $destination"
@@ -101,20 +179,68 @@ configure_system_files() {
         fi
     done
 
-    # Create Flameshot directory
-    mkdir -p "$USER_HOME/00/Pictures/Flameshot" && log "Created Flameshot directory" || error "Failed to create Flameshot directory"
+    # Create Flameshot directory with proper error handling
+    if [ ! -d "$USER_HOME/00/Pictures" ]; then
+        if ! mkdir -p "$USER_HOME/00/Pictures"; then
+            error "Failed to create Pictures directory"
+            return 0  
+        fi
+    fi
+    
+    if mkdir -p "$USER_HOME/00/Pictures/Flameshot"; then
+        log "Created Flameshot directory"
+    else
+        error "Failed to create Flameshot directory"
+    fi
+    
+    return 0
 }
 
 setup_batnotify() {
     log "Setting up battery monitor"
     
-    mkdir -p "$USER_HOME/.local/bin"
+    # Create bin directory if it doesn't exist
+    if ! mkdir -p "$USER_HOME/.local/bin"; then
+        error "Failed to create .local/bin directory"
+        return 1
+    fi
+    
+    # Create battery monitor script with improved error handling
     cat > "$USER_HOME/.local/bin/batnotify.sh" << 'EOL'
 #!/bin/bash
 
+# Exit on error
+set -e
+
+# Function to log errors
+log_error() {
+    echo "$(date +'%Y-%m-%d %H:%M:%S') ERROR: $1" >> "$HOME/.local/share/batnotify.log"
+    notify-send -u normal "Battery Monitor Error" "$1"
+}
+
+# Create log directory
+mkdir -p "$HOME/.local/share" 2>/dev/null || true
+
 while true; do
-    battery_level=$(cat /sys/class/power_supply/BAT*/capacity)
-    battery_status=$(cat /sys/class/power_supply/BAT*/status)
+    # Check if battery exists
+    if ! ls /sys/class/power_supply/BAT* &>/dev/null; then
+        log_error "No battery found"
+        sleep 300
+        continue
+    fi
+    
+    # Read battery info with error handling
+    if ! battery_level=$(cat /sys/class/power_supply/BAT*/capacity 2>/dev/null); then
+        log_error "Failed to read battery level"
+        sleep 300
+        continue
+    fi
+    
+    if ! battery_status=$(cat /sys/class/power_supply/BAT*/status 2>/dev/null); then
+        log_error "Failed to read battery status"
+        sleep 300
+        continue
+    fi
 
     if [[ "$battery_status" == "Discharging" && "$battery_level" -gt 0 && "$battery_level" -le 7 ]]; then
         notify-send -u critical "Low Battery" "Battery level is ${battery_level}%"
@@ -127,116 +253,193 @@ while true; do
 done
 EOL
 
-    chmod +x "$USER_HOME/.local/bin/batnotify.sh"
+    # Make script executable
+    if ! chmod +x "$USER_HOME/.local/bin/batnotify.sh"; then
+        error "Failed to make battery monitor script executable"
+        return 1
+    fi
+    
+    # Create systemd user directory
+    if ! mkdir -p "$USER_HOME/.config/systemd/user/"; then
+        error "Failed to create systemd user directory"
+        return 1
+    fi
     
     # Create a systemd user service
-    # now it doesn't need to be in .xinitrc
-    mkdir -p "$USER_HOME/.config/systemd/user/"
     cat > "$USER_HOME/.config/systemd/user/batnotify.service" << EOL
 [Unit]
 Description=Battery Notification Service
+After=graphical-session.target
+PartOf=graphical-session.target
 
 [Service]
 ExecStart=$USER_HOME/.local/bin/batnotify.sh
+Restart=always
+RestartSec=30
 
 [Install]
 WantedBy=default.target
 EOL
 
-    systemctl --user enable batnotify.service
-    systemctl --user start batnotify.service
+    if [ -f "$USER_HOME/.config/systemd/user/batnotify.service" ]; then
+        if ! systemctl --user enable batnotify.service; then
+            error "Failed to enable battery monitor service"
+            return 1
+        fi
+        
+        if ! systemctl --user start batnotify.service; then
+            error "Failed to start battery monitor service"
+            return 1
+        fi
+        
+        log "Battery monitor service enabled and started"
+    else
+        error "Failed to create systemd service for battery monitor"
+        return 1
+    fi
     
     log "Battery monitor setup complete"
+    return 0
 }
 
 setup_dotfiles() {
     local dotfiles_dir="$USER_HOME/.cfg"
     local dotfiles_backup="$USER_HOME/.cfg-bk"
 
-    log "LA MIGRA WEEEEYYYY"
+    log "Setting up dotfiles"
+    
+    # Check if dotfiles directory already exists
+    if [ -d "$dotfiles_dir" ]; then
+        log "Dotfiles directory already exists. Backing up..."
+        if ! mv "$dotfiles_dir" "${dotfiles_dir}.old.$(date +%Y%m%d%H%M%S)"; then
+            error "Failed to backup existing dotfiles directory"
+            return 0  
+        fi
+    fi
+    
+    # Clone repository
     if ! git clone --bare https://github.com/cristian158/spweedy "$dotfiles_dir"; then
         error "Failed to clone dotfiles repository"
-        return 1
+        return 0  
     fi
 
+    # Define alias for working with dotfiles
     alias dots="git --git-dir=$dotfiles_dir --work-tree=$USER_HOME"
 
-    mkdir -p "$dotfiles_backup"
-    if ! dots checkout 2>&1 | grep -E '\s+\.' | awk {'print $1'} | xargs -I{} mv {} "$dotfiles_backup/{}"; then
-        error "Failed to backup existing files"
-        return 1
+    # Create backup directory
+    if ! mkdir -p "$dotfiles_backup"; then
+        error "Failed to create dotfiles backup directory"
+        return 0  
     fi
+    
+    # Backup existing files that would be overwritten
+    dots_output=$(dots checkout 2>&1) || true
+    echo "$dots_output" | grep -E '\s+\.' | while read -r file; do
+        file_path=$(echo "$file" | sed 's/^\s*//')
+        backup_dir="$dotfiles_backup/$(dirname "$file_path")"
+        
+        if ! mkdir -p "$backup_dir"; then
+            error "Failed to create backup directory for $file_path"
+            continue
+        fi
+        
+        if ! mv "$USER_HOME/$file_path" "$backup_dir/"; then
+            error "Failed to backup file $file_path"
+        fi
+    done
 
+    # Checkout dotfiles
     if ! dots checkout; then
         error "Failed to checkout dotfiles"
-        return 1
+        return 0  
     fi
 
-    dots config --local status.showUntrackedFiles no
-    echo "alias dots='git --git-dir=$dotfiles_dir --work-tree=$USER_HOME'" >> "$USER_HOME/.bashrc"
+    # Configure git
+    if ! dots config --local status.showUntrackedFiles no; then
+        error "Failed to configure dotfiles git repository"
+        return 0  
+    fi
+    
+    # Add alias to bashrc if it doesn't exist
+    if ! grep -q "alias dots=" "$USER_HOME/.bashrc"; then
+        echo "alias dots='git --git-dir=$dotfiles_dir --work-tree=$USER_HOME'" >> "$USER_HOME/.bashrc"
+        log "Added dots alias to .bashrc"
+    fi
+    
+    log "Dotfiles setup complete"
+    return 0
 }
 
 setup_zsh() {
     log "Setting up Zsh and related tools"
     
-    # Install Zsh
     yes_no "Install Zsh" "yay -S --needed zsh"
     
-    # Install Powerlevel10k
     yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.powerlevel10k\" && echo 'source ~/.powerlevel10k/powerlevel10k.zsh-theme' >> \"$USER_HOME/.zshrc\""
     
-    # Install Zsh addons
     yes_no "Install Zsh addons" "yay -S --needed zsh-autosuggestions zsh-syntax-highlighting"
     
-    # Set Zsh as default shell
     yes_no "Set Zsh as default shell" "chsh -s $(which zsh)"
     
     log "Zsh setup completed"
 }
 
 cleanup() {
-    log "Performing cleanup"
+    log "Cleaning up temporary files"
     
-    # Remove temporary directory
-    rm -rf "$TEMP_DIR"
+    if [ -d "$TEMP_DIR" ]; then
+        rm -rf "$TEMP_DIR" || log "Warning: Failed to remove temporary directory"
+    fi
     
-    # Remove any leftover package files
-    yay -Scc --noconfirm
-    
-    # Clean pacman cache
-    pacman -Scc --noconfirm
-    
-    # Remove orphaned packages
-    pacman -Rns $(pacman -Qtdq) --noconfirm
-
-    # Clear system journal logs older than 1 days
-    journalctl --vacuum-time=1d
-
-    # Clear user cache
-    rm -rf "$USER_HOME/.cache/*"
-
-    # Clear thumbnails cache
-    rm -rf "$USER_HOME/.thumbnails/*"
-    rm -rf "$USER_HOME/.cache/thumbnails/*"
-
-    log "Cleanup completed"
+    log "Cleanup complete"
 }
 
 main() {
-    if [[ "${1:-}" == "--auto" ]]; then
-        AUTO_MODE=true
-        log "Running in automatic mode"
+    # Parse command line arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --auto)
+                AUTO_MODE=true
+                log "Running in automatic mode"
+                shift
+                ;;
+            --help|-h)
+                echo "Usage: $0 [--auto] [--help]"
+                echo "  --auto    Run in automatic mode (no prompts)"
+                echo "  --help    Show this help message"
+                exit 0
+                ;;
+            *)
+                error "Unknown option: $1"
+                echo "Usage: $0 [--auto] [--help]"
+                exit 1
+                ;;
+        esac
+    done
+    
+    # Check for root privileges
+ #   if [ "$(id -u)" -eq 0 ]; then
+ #       error "This script should not be run as root"
+ #       exit 1
+ #   fi
+    
+    # Check if running on Arch Linux
+    if [ ! -f "/etc/arch-release" ]; then
+        log "Warning: This script is designed for Arch Linux but the system doesn't appear to be Arch"
     fi
 
     log "Welcome to:"
     print_banner
 
-    # Create temporary directory
-    mkdir -p "$TEMP_DIR"
+    mkdir -p "$TEMP_DIR" || { error "Failed to create temporary directory"; exit 1; }
 
-    # Check and copy necessary files
-    [[ -f "$BASHTEST_DIR/.bashrc" ]] && yes_no "Copy and source .bashrc" "cp \"$BASHTEST_DIR/.bashrc\" \"$USER_HOME/.bashrc\" && source \"$USER_HOME/.bashrc\""
-    [[ -f "$BASHTEST_DIR/pacman.conf" ]] && yes_no "Configure pacman" "cp \"$BASHTEST_DIR/pacman.conf\" \"/etc/pacman.conf\""
+    if check_file_exists "$BASHTEST_DIR/.bashrc"; then
+        yes_no "Copy and source .bashrc" "cp \"$BASHTEST_DIR/.bashrc\" \"$USER_HOME/.bashrc\" && source \"$USER_HOME/.bashrc\""
+    fi
+    
+    if check_file_exists "$BASHTEST_DIR/pacman.conf"; then
+        yes_no "Configure pacman" "cp \"$BASHTEST_DIR/pacman.conf\" \"/etc/pacman.conf\""
+    fi
 
     yes_no "Perform full system update" "pacman -Syu"
     yes_no "Install Yay" "install_yay"
@@ -251,7 +454,12 @@ main() {
     yes_no "Install media tools" "yay -S --needed mpd ncmpcpp sxiv"
     yes_no "Install fonts and themes" "yay -S --needed ttf-iosevka ttf-nerd-fonts-symbols"
 
-    yes_no "Install Ranger DevIcons" "git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\" && ranger --copy-config=all"
+    if check_dir_exists "$CONFIG_DIR/ranger/plugins"; then
+        yes_no "Install Ranger DevIcons" "git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\" && ranger --copy-config=all"
+    else
+        yes_no "Install Ranger DevIcons" "mkdir -p \"$CONFIG_DIR/ranger/plugins\" && git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\" && ranger --copy-config=all"
+    fi
+    
     yes_no "Install NvChad" "git clone https://github.com/NvChad/NvChad \"$CONFIG_DIR/nvim\" --depth 1 && nvim"
     yes_no "Install Matcha GTK theme" "git clone https://github.com/vinceliuice/Matcha-gtk-theme.git \"$TEMP_DIR/Matcha-gtk-theme\" && (cd \"$TEMP_DIR/Matcha-gtk-theme\" && ./install.sh -c dark -t sea)"
     yes_no "Install Qogir icon theme" "git clone https://github.com/vinceliuice/Qogir-icon-theme.git \"$TEMP_DIR/Qogir-icon-theme\" && (cd \"$TEMP_DIR/Qogir-icon-theme\" && ./install.sh -c standard -t manjaro)"
@@ -266,28 +474,11 @@ main() {
     yes_no "Setup battery monitor" "setup_batnotify"
     yes_no "Setup dotfiles" "setup_dotfiles"
 
-    cleanup
-
     log "Script execution completed. Check the log for details on which operations were performed or skipped."
 }
 
+# Set up trap handlers
 trap cleanup EXIT
-trap 'echo "Script interrupted. Exiting..."; exit 1' SIGINT
+trap 'echo "Script interrupted. Exiting..."; exit 1' SIGINT SIGTERM
 
 main "$@"
-
-
-
-
-###############################################################################
-## 
-## Deprecated
-#
-#   exists() {
-#       if [ -e "$1" ]; then
-#           log ":: $2 $(if [ -d "$1" ]; then echo "directory"; else echo "file"; fi) exists"
-#       else
-#           log ":: $2 not found"
-#       fi
-#   }
-
