@@ -475,14 +475,14 @@ main() {
     yes_no "Install Yay" "install_yay"
 
     # Split package installation into groups
-    yes_no "Install base packages" "sudo yay -S --needed base-devel git curl wget"
-    yes_no "Install window manager and utilities" "sudo yay -S --needed bspwm sxhkd polybar dunst rofi feh picom"
-    yes_no "Install terminal" "sudo yay -S --needed alacritty"
-    yes_no "Install system utilities" "sudo yay -S --needed alsa-utils bluez bluez-utils network-manager-applet xclip ufw"
-    yes_no "Install file managers and archivers" "sudo yay -S --needed ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
-    yes_no "Install text editors and development tools" "sudo yay -S --needed neovim vim github-cli"
-    yes_no "Install media tools" "sudo yay -S --needed mpd ncmpcpp sxiv"
-    yes_no "Install fonts and themes" "sudo yay -S --needed ttf-iosevka ttf-nerd-fonts-symbols"
+    yes_no "Install base packages" "yay -S --needed base-devel git curl wget"
+    yes_no "Install window manager and utilities" "yay -S --needed bspwm sxhkd polybar dunst rofi feh picom"
+    yes_no "Install terminal" "yay -S --needed alacritty"
+    yes_no "Install system utilities" "yay -S --needed alsa-utils bluez bluez-utils network-manager-applet xclip ufw"
+    yes_no "Install file managers and archivers" "yay -S --needed ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
+    yes_no "Install text editors and development tools" "yay -S --needed neovim vim github-cli"
+    yes_no "Install media tools" "yay -S --needed mpd ncmpcpp sxiv"
+    yes_no "Install fonts and themes" "yay -S --needed ttf-iosevka ttf-nerd-fonts-symbols"
 
     if check_dir_exists "$CONFIG_DIR/ranger/plugins"; then
         yes_no "Install Ranger DevIcons" "git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\" && ranger --copy-config=all"
