@@ -84,60 +84,13 @@ Customized Arch System Helper
 }
 
 yes_no() {
-    local action="$2"
     local prompt="$1"
+    local action="$2"
     
     if [ "$AUTO_MODE" = true ]; then
-        log "AUTO_MODE: $prompt"
-        
-        # For yay commands, NEVER use sudo
-        if [[ "$action" == *"yay "* ]]; then
-            log "Running yay command without sudo..."
-            if eval "$action"; then
-                log "$prompt - Completed automatically (AUTO_MODE)"
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-            return 0
-        fi
-        
-        # For git clone commands, NEVER use sudo
-        if [[ "$action" == *"git clone"* ]]; then
-            log "Running git command without sudo..."
-            if eval "$action"; then
-                log "$prompt - Completed automatically (AUTO_MODE)"
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-            return 0
-        fi
-        
-        # For systemctl --user commands, NEVER use sudo
-        if [[ "$action" == *"systemctl --user"* ]]; then
-            log "Running systemctl --user command without sudo..."
-            if eval "$action"; then
-                log "$prompt - Completed automatically (AUTO_MODE)"
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-            return 0
-        fi
-        
-        # For commands that already use sudo or sudo_if_needed
-        if [[ "$action" == *"sudo "* || "$action" == *"sudo_if_needed"* ]]; then
-            log "Running command with existing sudo handling..."
-            if eval "$action"; then
-                log "$prompt - Completed automatically (AUTO_MODE)"
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-            return 0
-        fi
-        
-        # For pacman commands, ALWAYS use sudo
-        if [[ "$action" == *"pacman "* ]]; then
-            log "Running pacman command with sudo..."
-            if eval "sudo $action"; then
+        # In AUTO_MODE, always use sudo_if_needed to ensure privileges
+        local modified_action="sudo_if_needed $action"
+        if eval "$modified_action"; then
                 log "$prompt - Completed with elevated privileges (AUTO_MODE)"
             else
                 log "$prompt - Failed and continuing..."
@@ -145,38 +98,6 @@ yes_no() {
             return 0
         fi
         
-        # For install_yay function, run as-is
-        if [[ "$action" == "install_yay" ]]; then
-            log "Running install_yay function..."
-            if eval "$action"; then
-                log "$prompt - Completed automatically (AUTO_MODE)"
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-            return 0
-        fi
-        
-        # For all other commands, try without sudo first
-        log "Trying command without sudo first..."
-        if eval "$action"; then
-            log "$prompt - Completed automatically (AUTO_MODE)"
-        else
-            # If it fails and doesn't contain user home references, try with sudo
-            if [[ "$action" != *"$USER_HOME"* && "$action" != *"$HOME"* && 
-                  "$action" != *"~/"* && "$action" != *"\$HOME"* ]]; then
-                log "Command failed. Retrying with sudo..."
-                if eval "sudo $action"; then
-                    log "$prompt - Completed with elevated privileges (AUTO_MODE) after retry"
-                else
-                    log "$prompt - Failed completely and continuing..."
-                fi
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-        fi
-        return 0
-    fi
-
     while true; do
         read -rp "$prompt (Y/n): " answer
         case "${answer,,}" in
@@ -477,7 +398,7 @@ main() {
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --auto)
+            --auto|-a)
                 AUTO_MODE=true
                 log "Running in automatic mode (god mode with elevated privileges)"
                 shift
