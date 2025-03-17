@@ -83,96 +83,79 @@ Customized Arch System Helper
 "
 }
 
+# Configure sudo to not require password in AUTO_MODE
+setup_auto_mode() {
+    log "Setting up auto mode (passwordless sudo)"
+    
+    # Check if we're already root
+    if [ "$(id -u)" -eq 0 ]; then
+        log "Already running as root, no need to configure sudo"
+        return 0
+    fi
+    
+    # Create a temporary sudoers file
+    local temp_sudoers="/tmp/temp_sudoers_$$"
+    local current_user="$(whoami)"
+    
+    echo "$current_user ALL=(ALL) NOPASSWD: ALL" > "$temp_sudoers"
+    
+    # Check syntax
+    if ! visudo -c -f "$temp_sudoers"; then
+        error "Failed to create valid sudoers file"
+        rm -f "$temp_sudoers"
+        return 1
+    fi
+    
+    # Add to sudoers.d
+    if ! sudo cp "$temp_sudoers" "/etc/sudoers.d/99_$current_user"; then
+        error "Failed to install sudoers file"
+        rm -f "$temp_sudoers"
+        return 1
+    fi
+    
+    # Set proper permissions
+    if ! sudo chmod 0440 "/etc/sudoers.d/99_$current_user"; then
+        error "Failed to set permissions on sudoers file"
+        return 1
+    fi
+    
+    rm -f "$temp_sudoers"
+    log "Auto mode configured successfully - sudo will no longer prompt for password"
+    
+    return 0
+}
+
+# Function to create a non-interactive version of .migrate
+create_noninteractive_migrate() {
+    log "Creating non-interactive version of .migrate"
+    
+    if [ ! -f "$USER_HOME/.migrate" ]; then
+        error "Cannot find .migrate script"
+        return 1
+    fi
+    
+    # Create a modified version that automatically selects option 1 (backup) for conflicts
+    cat "$USER_HOME/.migrate" | sed 's/read -p "Enter your choice \[1-3\]: " choice/choice=1/' > "$USER_HOME/.migrate_auto"
+    
+    chmod +x "$USER_HOME/.migrate_auto"
+    log "Created non-interactive .migrate_auto script"
+    
+    return 0
+}
+
 yes_no() {
-    local action="$2"
     local prompt="$1"
+    local action="$2"
     
     if [ "$AUTO_MODE" = true ]; then
         log "AUTO_MODE: $prompt"
         
-        # For yay commands, NEVER use sudo
-        if [[ "$action" == *"yay "* ]]; then
-            log "Running yay command without sudo..."
-            if eval "$action"; then
-                log "$prompt - Completed automatically (AUTO_MODE)"
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-            return 0
-        fi
-        
-        # For git clone commands, NEVER use sudo
-        if [[ "$action" == *"git clone"* ]]; then
-            log "Running git command without sudo..."
-            if eval "$action"; then
-                log "$prompt - Completed automatically (AUTO_MODE)"
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-            return 0
-        fi
-        
-        # For systemctl --user commands, NEVER use sudo
-        if [[ "$action" == *"systemctl --user"* ]]; then
-            log "Running systemctl --user command without sudo..."
-            if eval "$action"; then
-                log "$prompt - Completed automatically (AUTO_MODE)"
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-            return 0
-        fi
-        
-        # For commands that already use sudo or sudo_if_needed
-        if [[ "$action" == *"sudo "* || "$action" == *"sudo_if_needed"* ]]; then
-            log "Running command with existing sudo handling..."
-            if eval "$action"; then
-                log "$prompt - Completed automatically (AUTO_MODE)"
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-            return 0
-        fi
-        
-        # For pacman commands, ALWAYS use sudo
-        if [[ "$action" == *"pacman "* ]]; then
-            log "Running pacman command with sudo..."
-            if eval "sudo $action"; then
-                log "$prompt - Completed with elevated privileges (AUTO_MODE)"
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-            return 0
-        fi
-        
-        # For install_yay function, run as-is
-        if [[ "$action" == "install_yay" ]]; then
-            log "Running install_yay function..."
-            if eval "$action"; then
-                log "$prompt - Completed automatically (AUTO_MODE)"
-            else
-                log "$prompt - Failed and continuing..."
-            fi
-            return 0
-        fi
-        
-        # For all other commands, try without sudo first
-        log "Trying command without sudo first..."
+        # In AUTO_MODE, we don't need to worry about sudo for most commands
+        # Just execute the command directly
         if eval "$action"; then
             log "$prompt - Completed automatically (AUTO_MODE)"
         else
-            # If it fails and doesn't contain user home references, try with sudo
-            if [[ "$action" != *"$USER_HOME"* && "$action" != *"$HOME"* && 
-                  "$action" != *"~/"* && "$action" != *"\$HOME"* ]]; then
-                log "Command failed. Retrying with sudo..."
-                if eval "sudo $action"; then
-                    log "$prompt - Completed with elevated privileges (AUTO_MODE) after retry"
-                else
-                    log "$prompt - Failed completely and continuing..."
-                fi
-            else
-                log "$prompt - Failed and continuing..."
-            fi
+            log "$prompt - Failed and continuing..."
         fi
         return 0
     fi
@@ -437,8 +420,9 @@ setup_dotfiles() {
         log ".migrate script already exists in home directory"
     fi
     
-    # In AUTO_MODE, set flag to run .migrate at the end
+    # In AUTO_MODE, create a non-interactive version of .migrate
     if [ "$AUTO_MODE" = true ]; then
+        create_noninteractive_migrate
         RUN_MIGRATE=true
         log "Dotfiles setup: .migrate will be executed automatically at the end of the script"
     else
@@ -477,20 +461,20 @@ main() {
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --auto)
+            --auto|a)
                 AUTO_MODE=true
                 log "Running in automatic mode (god mode with elevated privileges)"
                 shift
                 ;;
             --help|-h)
-                echo "Usage: $0 [--auto] [--help]"
-                echo "  --auto    Run in automatic mode (no prompts)"
-                echo "  --help    Show this help message"
+                echo "Usage: $0 [--auto|a] [--help]"
+                echo "  --auto, a    Run in automatic mode (no prompts, passwordless sudo)"
+                echo "  --help, h    Show this help message"
                 exit 0
                 ;;
             *)
                 error "Unknown option: $1"
-                echo "Usage: $0 [--auto] [--help]"
+                echo "Usage: $0 [--auto|a] [--help]"
                 exit 1
                 ;;
         esac
@@ -501,6 +485,13 @@ main() {
         error "This script should not be run as root"
         log "Please run as a normal user. The script will use sudo for commands that need root privileges."
         exit 1
+    fi
+    
+    # Set up auto mode if requested
+    if [ "$AUTO_MODE" = true ]; then
+        if ! setup_auto_mode; then
+            log "Warning: Failed to set up auto mode, continuing with regular sudo"
+        fi
     fi
     
     # Check if sudo is available and the user has sudo privileges
@@ -561,13 +552,27 @@ main() {
     # Run .migrate automatically if in AUTO_MODE and the flag is set
     if [ "$AUTO_MODE" = true ] && [ "$RUN_MIGRATE" = true ]; then
         log "AUTO_MODE: Running .migrate automatically as part of the domino effect"
-        if [ -x "$USER_HOME/.migrate" ]; then
-            # Run .migrate as the regular user, not with sudo
+        
+        if [ -x "$USER_HOME/.migrate_auto" ]; then
+            # Run non-interactive version in auto mode
+            log "AUTO_MODE: Executing non-interactive .migrate_auto"
+            (cd "$USER_HOME" && bash -c "./.migrate_auto")
+            migrate_status=$?
+        elif [ -x "$USER_HOME/.migrate" ]; then
+            # Run regular .migrate as fallback
             log "Executing $USER_HOME/.migrate"
-            "$USER_HOME/.migrate"
-            log ".migrate execution completed"
+            # Ensure we're in the home directory and use bash to execute the script
+            (cd "$USER_HOME" && bash -c "./.migrate")
+            migrate_status=$?
         else
             error "Cannot execute .migrate: file not found or not executable"
+            migrate_status=1
+        fi
+        
+        if [ "$migrate_status" -eq 0 ]; then
+            log ".migrate execution completed successfully"
+        else
+            error ".migrate execution failed with exit code $migrate_status"
         fi
     fi
 }
