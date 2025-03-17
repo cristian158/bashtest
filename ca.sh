@@ -314,12 +314,12 @@ WantedBy=default.target
 EOL
 
     if [ -f "$USER_HOME/.config/systemd/user/batnotify.service" ]; then
-        if ! sudo_if_needed systemctl --user enable batnotify.service; then
+        if ! systemctl --user enable batnotify.service; then
             error "Failed to enable battery monitor service"
             return 1
         fi
         
-        if ! sudo_if_needed systemctl --user start batnotify.service; then
+        if ! systemctl --user start batnotify.service; then
             error "Failed to start battery monitor service"
             return 1
         fi
@@ -335,72 +335,28 @@ EOL
 }
 
 setup_dotfiles() {
-    local dotfiles_dir="$USER_HOME/.cfg"
-    local dotfiles_backup="$USER_HOME/.cfg-bk"
-
     log "Setting up dotfiles"
     
-    # Check if dotfiles directory already exists
-    if [ -d "$dotfiles_dir" ]; then
-        log "Dotfiles directory already exists. Backing up..."
-        if ! mv "$dotfiles_dir" "${dotfiles_dir}.old.$(date +%Y%m%d%H%M%S)"; then
-            error "Failed to backup existing dotfiles directory"
-            return 0  
-        fi
-    fi
-    
-    # Clone repository
-    if ! git clone --bare https://github.com/cristian158/spweedy "$dotfiles_dir"; then
-        error "Failed to clone dotfiles repository"
-        return 0  
-    fi
-
-    # Define function for working with dotfiles instead of an alias
-    dots() {
-        git --git-dir="$dotfiles_dir" --work-tree="$USER_HOME" "$@"
-    }
-
-    # Create backup directory
-    if ! mkdir -p "$dotfiles_backup"; then
-        error "Failed to create dotfiles backup directory"
-        return 0  
-    fi
-    
-    # Backup existing files that would be overwritten
-    dots_output=$(dots checkout 2>&1) || true
-    echo "$dots_output" | grep -E '\s+\.' | while read -r file; do
-        file_path=$(echo "$file" | sed 's/^\s*//')
-        backup_dir="$dotfiles_backup/$(dirname "$file_path")"
-        
-        if ! mkdir -p "$backup_dir"; then
-            error "Failed to create backup directory for $file_path"
-            continue
+    # Copy the .migrate script to the user's home directory if it doesn't exist
+    if [ ! -f "$USER_HOME/.migrate" ]; then
+        if ! cp "$BASHTEST_DIR/.migrate" "$USER_HOME/.migrate"; then
+            error "Failed to copy .migrate script to home directory"
+            return 1
         fi
         
-        if ! mv "$USER_HOME/$file_path" "$backup_dir/"; then
-            error "Failed to backup file $file_path"
+        if ! chmod +x "$USER_HOME/.migrate"; then
+            error "Failed to make .migrate script executable"
+            return 1
         fi
-    done
-
-    # Checkout dotfiles
-    if ! dots checkout; then
-        error "Failed to checkout dotfiles"
-        return 0  
-    fi
-
-    # Configure git
-    if ! dots config --local status.showUntrackedFiles no; then
-        error "Failed to configure dotfiles git repository"
-        return 0  
+        
+        log "Copied .migrate script to home directory"
+    else
+        log ".migrate script already exists in home directory"
     fi
     
-    # Add function to bashrc if it doesn't exist
-    if ! grep -q "dots()" "$USER_HOME/.bashrc"; then
-        echo "dots() { git --git-dir=\"$dotfiles_dir\" --work-tree=\"$USER_HOME\" \"\$@\"; }" >> "$USER_HOME/.bashrc"
-        log "Added dots function to .bashrc"
-    fi
+    # Inform the user about the next step
+    log "Dotfiles setup: Please run ~/.migrate after this script completes to set up your dotfiles"
     
-    log "Dotfiles setup complete"
     return 0
 }
 

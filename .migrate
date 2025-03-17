@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 ##############
 ## MIGRATION
 #
@@ -10,58 +9,193 @@
 ## Script to migrate home git bare repository to new system
 #
 
-echo :: STARTING MIGRATION
-sleep 1
+# Error handling
+set -o pipefail
+BACKUP_DIR="$HOME/.config-backup"
+DOTFILES_DIR="$HOME/.cfg"
+GITHUB_REPO="https://github.com/cristian158/spweedy"
 
-## Making sure alias is commited to bashrc/zashrc 
-#echo "alias dots='git --git-dir=$HOME/.cfg/ --work-tree=$HOME'" >> $HOME/.bashrc
+# Colors for better readability
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-## Source repository to ignore the folder where to clone
-#echo ".cfg" >> .gitignore
-
-## Clone dotfiles into bare repository @ home
-echo :: Cloning dotfiles into bare repository @ home
-git clone --bare https://github.com/cristian158/spweedy $HOME/.cfg
-sleep 1 
-## add when pertinent
-# if [ -e ~/.cfg ]; then echo 'dotfiles cloned into .cfg'; else echo 'something happen maybe'; fi
-
-## Define function in current shell scope
-dots() {
-    git --git-dir="$HOME/.cfg" --work-tree="$HOME" "$@"
+# Log functions for better user feedback
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
 }
-sleep 1
 
-## Checkout actual content from the bare repository to home
-echo :: Checking out content from the bare repository to home
-dots checkout
+log_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
 
-### If previous step fails with untracked working tree files might be because
-### home folder has stock config files which would be overwritten by Git
-### One solution: back up with
-# mkdir -p .config-backup && \
-# dots checkout 2>&1 | egrep "\s+\." | awk {'print $1'} | \
-# xargs -I{} mv {} .config-backup/{}
-#
-### Another solution: delete conflicting files
-#
-#read -p ":: Which files wanna delete? " AnS
-#echo :: Deleting $Ans
-#rm $Ans
+log_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
 
-### rerun checkout
-dots checkout
-sleep 1
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+    return 1
+}
 
-echo :: Set flag for untracked files
-dots config --local status.showUntrackedFiles no
+# Function to handle errors
+handle_error() {
+    log_error "$1"
+    if [ "$2" = "exit" ]; then
+        exit 1
+    fi
+    return 1
+}
 
+# Function to create backup of conflicting files
+backup_conflicting_files() {
+    log_info "Checking for conflicting files..."
+    
+    # Create backup directory
+    mkdir -p "$BACKUP_DIR" || handle_error "Failed to create backup directory" "exit"
+    
+    # Get list of conflicting files
+    local conflicts=$(dots checkout 2>&1 | grep -E '\s+\.' | awk '{print $1}')
+    
+    if [ -z "$conflicts" ]; then
+        log_info "No conflicting files found"
+        return 0
+    fi
+    
+    log_warning "Found conflicting files that would be overwritten by checkout"
+    log_info "Backing up conflicting files to $BACKUP_DIR"
+    
+    # Backup each conflicting file
+    echo "$conflicts" | while read -r file; do
+        local dir=$(dirname "$BACKUP_DIR/$file")
+        mkdir -p "$dir"
+        if mv "$HOME/$file" "$BACKUP_DIR/$file"; then
+            log_success "Backed up: $file"
+        else
+            log_warning "Failed to backup: $file"
+        fi
+    done
+    
+    log_success "Backup completed"
+    return 0
+}
 
-echo :: byyyyyy
+# Function to checkout dotfiles with proper error handling
+checkout_dotfiles() {
+    log_info "Checking out dotfiles from repository"
+    
+    if dots checkout; then
+        log_success "Checkout successful"
+        return 0
+    else
+        log_warning "Checkout failed due to conflicting files"
+        
+        # Ask user how to handle conflicts
+        echo
+        echo "How would you like to handle conflicting files?"
+        echo "1) Backup conflicting files (recommended)"
+        echo "2) Delete conflicting files (not recommended)"
+        echo "3) Exit without changes"
+        echo
+        read -p "Enter your choice [1-3]: " choice
+        
+        case "$choice" in
+            1)
+                backup_conflicting_files
+                if dots checkout; then
+                    log_success "Checkout successful after backup"
+                    return 0
+                else
+                    handle_error "Checkout failed even after backup" "exit"
+                fi
+                ;;
+            2)
+                log_warning "Deleting conflicting files as requested"
+                local conflicts=$(dots checkout 2>&1 | grep -E '\s+\.' | awk '{print $1}')
+                echo "$conflicts" | xargs -I{} rm -f "$HOME/{}"
+                
+                if dots checkout; then
+                    log_success "Checkout successful after deleting conflicts"
+                    return 0
+                else
+                    handle_error "Checkout failed even after deleting conflicts" "exit"
+                fi
+                ;;
+            *)
+                handle_error "Exiting without changes" "exit"
+                ;;
+        esac
+    fi
+}
 
-########################
-## I think first push has to be: 
-## 	$ dots push --set-upstream origin master
-## 
-## the second push went without token
-## there's a workaround to this with ssh
+# Main script starts here
+echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
+echo -e "${BLUE}║         DOTFILES MIGRATION TOOL        ║${NC}"
+echo -e "${BLUE}╚════════════════════════════════════════╝${NC}"
+log_info "Starting migration process"
+
+# Check if ca.sh has already been run
+if [ -d "$DOTFILES_DIR" ]; then
+    log_info "Detected existing dotfiles directory"
+    log_info "Using existing dotfiles setup"
+    
+    # Check if dots function is already defined
+    if ! type dots >/dev/null 2>&1; then
+        log_info "Defining dots function"
+        dots() {
+            git --git-dir="$DOTFILES_DIR" --work-tree="$HOME" "$@"
+        }
+    fi
+else
+    log_info "Setting up dotfiles from scratch"
+    
+    # Clone dotfiles into bare repository @ home
+    log_info "Cloning dotfiles into bare repository"
+    if ! git clone --bare "$GITHUB_REPO" "$DOTFILES_DIR"; then
+        handle_error "Failed to clone repository" "exit"
+    fi
+    log_success "Repository cloned successfully"
+    
+    # Define function in current shell scope
+    dots() {
+        git --git-dir="$DOTFILES_DIR" --work-tree="$HOME" "$@"
+    }
+    
+    log_success "Dots function defined"
+fi
+
+# Checkout dotfiles with proper error handling
+checkout_dotfiles
+
+# Configure git to hide untracked files
+log_info "Configuring git to hide untracked files"
+if ! dots config --local status.showUntrackedFiles no; then
+    handle_error "Failed to configure git" "continue"
+fi
+
+# Add function to bashrc if it doesn't exist
+if ! grep -q "dots()" "$HOME/.bashrc"; then
+    log_info "Adding dots function to .bashrc"
+    echo "dots() { git --git-dir=\"$DOTFILES_DIR\" --work-tree=\"$HOME\" \"\$@\"; }" >> "$HOME/.bashrc"
+    log_success "Added dots function to .bashrc"
+fi
+
+log_success "Migration completed successfully"
+log_info "You may need to restart your terminal to use the dots command"
+
+echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║       DOTFILES MIGRATION COMPLETE      ║${NC}"
+echo -e "${GREEN}╚════════════════════════════════════════╝${NC}"
+
+# Usage tips
+echo
+log_info "Quick reference:"
+echo "  • Use 'dots status' to check the status of your dotfiles"
+echo "  • Use 'dots add <file>' to track a new file"
+echo "  • Use 'dots commit -m \"message\"' to commit changes"
+echo "  • Use 'dots push' to push changes to remote repository"
+echo
+log_info "First push should be: dots push --set-upstream origin master"
+echo
