@@ -48,6 +48,16 @@ check_dir_exists() {
     return 0
 }
 
+# Check if user has sudo privileges
+check_sudo() {
+    if ! sudo -v &>/dev/null; then
+        error "You need sudo privileges to run some parts of this script"
+        log "Please make sure you can use sudo and try again"
+        return 1
+    fi
+    return 0
+}
+
 print_banner() {
     echo "
  ██████╗ █████╗ ███████╗██╗  ██╗
@@ -161,21 +171,34 @@ configure_system_files() {
         # Create destination directory if it doesn't exist
         dest_dir=$(dirname "$destination")
         if [ ! -d "$dest_dir" ]; then
-            if ! mkdir -p "$dest_dir"; then
+            if ! sudo mkdir -p "$dest_dir"; then
                 error "Failed to create directory $dest_dir for $description"
                 continue
             fi
         fi
         
-        # Copy file with proper error handling
-        if cp "$source" "$destination"; then
-            if [[ -f "$destination" ]]; then
-                log "Successfully copied $description to $destination"
+        # Copy file with proper error handling - use sudo for system directories
+        if [[ "$destination" == /etc/* || "$destination" == /usr/* || "$destination" == /lib/* || "$destination" == /sys/* ]]; then
+            if sudo cp "$source" "$destination"; then
+                if [[ -f "$destination" ]]; then
+                    log "Successfully copied $description to $destination"
+                else
+                    error "Failed to verify $description at $destination"
+                fi
             else
-                error "Failed to verify $description at $destination"
+                error "Failed to copy $description to $destination"
             fi
         else
-            error "Failed to copy $description to $destination"
+            # Regular copy for user files
+            if cp "$source" "$destination"; then
+                if [[ -f "$destination" ]]; then
+                    log "Successfully copied $description to $destination"
+                else
+                    error "Failed to verify $description at $destination"
+                fi
+            else
+                error "Failed to copy $description to $destination"
+            fi
         fi
     done
 
@@ -373,13 +396,13 @@ setup_dotfiles() {
 setup_zsh() {
     log "Setting up Zsh and related tools"
     
-    yes_no "Install Zsh" "yay -S --needed zsh"
+    yes_no "Install Zsh" "sudo yay -S --needed zsh"
     
     yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.powerlevel10k\" && echo 'source ~/.powerlevel10k/powerlevel10k.zsh-theme' >> \"$USER_HOME/.zshrc\""
     
-    yes_no "Install Zsh addons" "yay -S --needed zsh-autosuggestions zsh-syntax-highlighting"
+    yes_no "Install Zsh addons" "sudo yay -S --needed zsh-autosuggestions zsh-syntax-highlighting"
     
-    yes_no "Set Zsh as default shell" "chsh -s $(which zsh)"
+    yes_no "Set Zsh as default shell" "sudo chsh -s $(which zsh) $USER"
     
     log "Zsh setup completed"
 }
@@ -417,11 +440,18 @@ main() {
         esac
     done
     
-    # Check for root privileges
- #   if [ "$(id -u)" -eq 0 ]; then
- #       error "This script should not be run as root"
- #       exit 1
- #   fi
+    # Check for root privileges - we don't want to run the entire script as root
+    if [ "$(id -u)" -eq 0 ]; then
+        error "This script should not be run as root"
+        log "Please run as a normal user. The script will use sudo for commands that need root privileges."
+        exit 1
+    fi
+    
+    # Check if sudo is available and the user has sudo privileges
+    if ! check_sudo; then
+        log "Some operations may fail without sudo privileges"
+        yes_no "Continue without sudo privileges?" "true" || exit 1
+    fi
     
     # Check if running on Arch Linux
     if [ ! -f "/etc/arch-release" ]; then
@@ -438,21 +468,21 @@ main() {
     fi
     
     if check_file_exists "$BASHTEST_DIR/pacman.conf"; then
-        yes_no "Configure pacman" "cp \"$BASHTEST_DIR/pacman.conf\" \"/etc/pacman.conf\""
+        yes_no "Configure pacman" "sudo cp \"$BASHTEST_DIR/pacman.conf\" \"/etc/pacman.conf\""
     fi
 
-    yes_no "Perform full system update" "pacman -Syu"
+    yes_no "Perform full system update" "sudo pacman -Syu"
     yes_no "Install Yay" "install_yay"
 
     # Split package installation into groups
-    yes_no "Install base packages" "yay -S --needed base-devel git curl wget"
-    yes_no "Install window manager and utilities" "yay -S --needed bspwm sxhkd polybar dunst rofi feh picom"
-    yes_no "Install terminal" "yay -S --needed alacritty"
-    yes_no "Install system utilities" "yay -S --needed alsa-utils bluez bluez-utils network-manager-applet xclip ufw"
-    yes_no "Install file managers and archivers" "yay -S --needed ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
-    yes_no "Install text editors and development tools" "yay -S --needed neovim vim github-cli"
-    yes_no "Install media tools" "yay -S --needed mpd ncmpcpp sxiv"
-    yes_no "Install fonts and themes" "yay -S --needed ttf-iosevka ttf-nerd-fonts-symbols"
+    yes_no "Install base packages" "sudo yay -S --needed base-devel git curl wget"
+    yes_no "Install window manager and utilities" "sudo yay -S --needed bspwm sxhkd polybar dunst rofi feh picom"
+    yes_no "Install terminal" "sudo yay -S --needed alacritty"
+    yes_no "Install system utilities" "sudo yay -S --needed alsa-utils bluez bluez-utils network-manager-applet xclip ufw"
+    yes_no "Install file managers and archivers" "sudo yay -S --needed ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
+    yes_no "Install text editors and development tools" "sudo yay -S --needed neovim vim github-cli"
+    yes_no "Install media tools" "sudo yay -S --needed mpd ncmpcpp sxiv"
+    yes_no "Install fonts and themes" "sudo yay -S --needed ttf-iosevka ttf-nerd-fonts-symbols"
 
     if check_dir_exists "$CONFIG_DIR/ranger/plugins"; then
         yes_no "Install Ranger DevIcons" "git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\" && ranger --copy-config=all"
@@ -465,7 +495,7 @@ main() {
     yes_no "Install Qogir icon theme" "git clone https://github.com/vinceliuice/Qogir-icon-theme.git \"$TEMP_DIR/Qogir-icon-theme\" && (cd \"$TEMP_DIR/Qogir-icon-theme\" && ./install.sh -c standard -t manjaro)"
     yes_no "Install Tela icon theme" "git clone https://github.com/vinceliuice/Tela-icon-theme.git \"$TEMP_DIR/Tela-icon-theme\" && (cd \"$TEMP_DIR/Tela-icon-theme\" && ./install.sh)"
 
-    yes_no "Install GTK engines" "yay -S --needed gtk-engine-murrine gtk-engines"
+    yes_no "Install GTK engines" "sudo yay -S --needed gtk-engine-murrine gtk-engines"
 
     # Setup Zsh and related tools
     setup_zsh
