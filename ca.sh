@@ -58,6 +58,15 @@ check_sudo() {
     return 0
 }
 
+# Function to handle privilege escalation
+sudo_if_needed() {
+    if [ "$(id -u)" -eq 0 ]; then
+        "$@"
+    else
+        sudo "$@"
+    fi
+}
+
 print_banner() {
     echo "
  ██████╗ █████╗ ███████╗██╗  ██╗
@@ -86,9 +95,9 @@ yes_no() {
     fi
 
     while true; do
-        read -rp "$prompt (y/n): " answer
+        read -rp "$prompt (Y/n): " answer
         case "${answer,,}" in
-            y|yes) 
+            y|yes|"") 
                 if eval "$action"; then
                     log "$prompt - Completed"
                 else
@@ -171,7 +180,7 @@ configure_system_files() {
         # Create destination directory if it doesn't exist
         dest_dir=$(dirname "$destination")
         if [ ! -d "$dest_dir" ]; then
-            if ! sudo mkdir -p "$dest_dir"; then
+            if ! sudo_if_needed mkdir -p "$dest_dir"; then
                 error "Failed to create directory $dest_dir for $description"
                 continue
             fi
@@ -179,7 +188,7 @@ configure_system_files() {
         
         # Copy file with proper error handling - use sudo for system directories
         if [[ "$destination" == /etc/* || "$destination" == /usr/* || "$destination" == /lib/* || "$destination" == /sys/* ]]; then
-            if sudo cp "$source" "$destination"; then
+            if sudo_if_needed cp "$source" "$destination"; then
                 if [[ -f "$destination" ]]; then
                     log "Successfully copied $description to $destination"
                 else
@@ -305,12 +314,12 @@ WantedBy=default.target
 EOL
 
     if [ -f "$USER_HOME/.config/systemd/user/batnotify.service" ]; then
-        if ! systemctl --user enable batnotify.service; then
+        if ! sudo_if_needed systemctl --user enable batnotify.service; then
             error "Failed to enable battery monitor service"
             return 1
         fi
         
-        if ! systemctl --user start batnotify.service; then
+        if ! sudo_if_needed systemctl --user start batnotify.service; then
             error "Failed to start battery monitor service"
             return 1
         fi
@@ -346,8 +355,10 @@ setup_dotfiles() {
         return 0  
     fi
 
-    # Define alias for working with dotfiles
-    alias dots="git --git-dir=$dotfiles_dir --work-tree=$USER_HOME"
+    # Define function for working with dotfiles instead of an alias
+    dots() {
+        git --git-dir="$dotfiles_dir" --work-tree="$USER_HOME" "$@"
+    }
 
     # Create backup directory
     if ! mkdir -p "$dotfiles_backup"; then
@@ -383,10 +394,10 @@ setup_dotfiles() {
         return 0  
     fi
     
-    # Add alias to bashrc if it doesn't exist
-    if ! grep -q "alias dots=" "$USER_HOME/.bashrc"; then
-        echo "alias dots='git --git-dir=$dotfiles_dir --work-tree=$USER_HOME'" >> "$USER_HOME/.bashrc"
-        log "Added dots alias to .bashrc"
+    # Add function to bashrc if it doesn't exist
+    if ! grep -q "dots()" "$USER_HOME/.bashrc"; then
+        echo "dots() { git --git-dir=\"$dotfiles_dir\" --work-tree=\"$USER_HOME\" \"\$@\"; }" >> "$USER_HOME/.bashrc"
+        log "Added dots function to .bashrc"
     fi
     
     log "Dotfiles setup complete"
@@ -396,13 +407,13 @@ setup_dotfiles() {
 setup_zsh() {
     log "Setting up Zsh and related tools"
     
-    yes_no "Install Zsh" "sudo yay -S --needed zsh"
+    yes_no "Install Zsh" "yay -S --needed zsh"
     
     yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.powerlevel10k\" && echo 'source ~/.powerlevel10k/powerlevel10k.zsh-theme' >> \"$USER_HOME/.zshrc\""
     
-    yes_no "Install Zsh addons" "sudo yay -S --needed zsh-autosuggestions zsh-syntax-highlighting"
+    yes_no "Install Zsh addons" "yay -S --needed zsh-autosuggestions zsh-syntax-highlighting"
     
-    yes_no "Set Zsh as default shell" "sudo chsh -s $(which zsh) $USER"
+    yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
     
     log "Zsh setup completed"
 }
@@ -468,10 +479,10 @@ main() {
     fi
     
     if check_file_exists "$BASHTEST_DIR/pacman.conf"; then
-        yes_no "Configure pacman" "sudo cp \"$BASHTEST_DIR/pacman.conf\" \"/etc/pacman.conf\""
+        yes_no "Configure pacman" "sudo_if_needed cp \"$BASHTEST_DIR/pacman.conf\" \"/etc/pacman.conf\""
     fi
 
-    yes_no "Perform full system update" "sudo pacman -Syu"
+    yes_no "Perform full system update" "sudo_if_needed pacman -Syu"
     yes_no "Install Yay" "install_yay"
 
     # Split package installation into groups
@@ -490,12 +501,12 @@ main() {
         yes_no "Install Ranger DevIcons" "mkdir -p \"$CONFIG_DIR/ranger/plugins\" && git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\" && ranger --copy-config=all"
     fi
     
-    yes_no "Install NvChad" "git clone https://github.com/NvChad/NvChad \"$CONFIG_DIR/nvim\" --depth 1 && nvim"
+    yes_no "Install NvChad" "git clone https://github.com/NvChad/NvChad \"$CONFIG_DIR/nvim\" --depth 1"
     yes_no "Install Matcha GTK theme" "git clone https://github.com/vinceliuice/Matcha-gtk-theme.git \"$TEMP_DIR/Matcha-gtk-theme\" && (cd \"$TEMP_DIR/Matcha-gtk-theme\" && ./install.sh -c dark -t sea)"
     yes_no "Install Qogir icon theme" "git clone https://github.com/vinceliuice/Qogir-icon-theme.git \"$TEMP_DIR/Qogir-icon-theme\" && (cd \"$TEMP_DIR/Qogir-icon-theme\" && ./install.sh -c standard -t manjaro)"
     yes_no "Install Tela icon theme" "git clone https://github.com/vinceliuice/Tela-icon-theme.git \"$TEMP_DIR/Tela-icon-theme\" && (cd \"$TEMP_DIR/Tela-icon-theme\" && ./install.sh)"
 
-    yes_no "Install GTK engines" "sudo yay -S --needed gtk-engine-murrine gtk-engines"
+    yes_no "Install GTK engines" "yay -S --needed gtk-engine-murrine gtk-engines"
 
     # Setup Zsh and related tools
     setup_zsh
