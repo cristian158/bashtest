@@ -132,7 +132,7 @@ checkout_dotfiles() {
 
 # Main script starts here
 echo -e "${BLUE}╔════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║         DOTFILES MIGRATION TOOL        ║${NC}"
+echo -e "${BLUE}║         LA MIGRAAAA WEEEEYYYYYY        ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════╝${NC}"
 log_info "Starting migration process"
 

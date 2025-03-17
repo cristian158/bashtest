@@ -19,6 +19,8 @@ LOG_FILE="$BASHTEST_DIR/script.log"
 # AUTO_MODE true --> script run automatically, execute all operations no asking for confirmation
 AUTO_MODE=false
 TEMP_DIR="/tmp/temp_cash"
+# Variable to track if .migrate should be run at the end (for AUTO_MODE)
+RUN_MIGRATE=false
 
 # Ensure log directory exists
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
@@ -86,8 +88,10 @@ yes_no() {
     local action="$2"
     
     if [ "$AUTO_MODE" = true ]; then
-        if eval "$action"; then
-            log "$prompt - Completed"
+        # In AUTO_MODE, always use sudo_if_needed to ensure privileges
+        local modified_action="sudo_if_needed $action"
+        if eval "$modified_action"; then
+            log "$prompt - Completed with elevated privileges (AUTO_MODE)"
         else
             log "$prompt - Failed and continuing..."
         fi
@@ -166,7 +170,7 @@ configure_system_files() {
         ["$BASHTEST_DIR/nobeep.conf"]="/etc/modprobe.d/nobeep.conf:Disable PC speaker beep"
         ["$BASHTEST_DIR/30-touchpad.conf"]="/etc/X11/xorg.conf.d/30-touchpad:Touchpad configuration"
         ["$BASHTEST_DIR/.migrate"]="$USER_HOME/.migrate:Migration file"
-        ["$BASHTEST_DIR/audio_disable_powersave.conf"]="/etc/modprobe.d/audio_disable_powersave.conf: Disable Audio Powersave mode"
+        ["$BASHTEST_DIR/audio_disable_powersave.conf"]="/etc/modprobe.d/audio_disable_powersave.conf:Disable Audio Powersave mode"
     )
 
     for source in "${!file_ops[@]}"; do
@@ -354,8 +358,14 @@ setup_dotfiles() {
         log ".migrate script already exists in home directory"
     fi
     
-    # Inform the user about the next step
-    log "Dotfiles setup: Please run ~/.migrate after this script completes to set up your dotfiles"
+    # In AUTO_MODE, set flag to run .migrate at the end
+    if [ "$AUTO_MODE" = true ]; then
+        RUN_MIGRATE=true
+        log "Dotfiles setup: .migrate will be executed automatically at the end of the script"
+    else
+        # Inform the user about the next step
+        log "Dotfiles setup: Please run ~/.migrate after this script completes to set up your dotfiles"
+    fi
     
     return 0
 }
@@ -390,7 +400,7 @@ main() {
         case "$1" in
             --auto)
                 AUTO_MODE=true
-                log "Running in automatic mode"
+                log "Running in automatic mode (god mode with elevated privileges)"
                 shift
                 ;;
             --help|-h)
@@ -429,10 +439,6 @@ main() {
     print_banner
 
     mkdir -p "$TEMP_DIR" || { error "Failed to create temporary directory"; exit 1; }
-
-    if check_file_exists "$BASHTEST_DIR/.bashrc"; then
-        yes_no "Copy and source .bashrc" "cp \"$BASHTEST_DIR/.bashrc\" \"$USER_HOME/.bashrc\" && source \"$USER_HOME/.bashrc\""
-    fi
     
     if check_file_exists "$BASHTEST_DIR/pacman.conf"; then
         yes_no "Configure pacman" "sudo_if_needed cp \"$BASHTEST_DIR/pacman.conf\" \"/etc/pacman.conf\""
@@ -472,6 +478,19 @@ main() {
     yes_no "Setup dotfiles" "setup_dotfiles"
 
     log "Script execution completed. Check the log for details on which operations were performed or skipped."
+    
+    # Run .migrate automatically if in AUTO_MODE and the flag is set
+    if [ "$AUTO_MODE" = true ] && [ "$RUN_MIGRATE" = true ]; then
+        log "AUTO_MODE: Running .migrate automatically as part of the domino effect"
+        if [ -x "$USER_HOME/.migrate" ]; then
+            # Run .migrate as the regular user, not with sudo
+            log "Executing $USER_HOME/.migrate"
+            "$USER_HOME/.migrate"
+            log ".migrate execution completed"
+        else
+            error "Cannot execute .migrate: file not found or not executable"
+        fi
+    fi
 }
 
 # Set up trap handlers
