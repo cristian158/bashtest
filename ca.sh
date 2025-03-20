@@ -143,7 +143,7 @@ create_noninteractive_migrate() {
     fi
     
     # Create a modified version that sets NONINTERACTIVE environment variable
-    cat "$USER_HOME/.migrate" | sed '1s/^/#!/usr\/bin\/env bash\nNONINTERACTIVE=1\n/' | grep -v '^#!/usr/bin/env bash' > "$USER_HOME/.migrate_auto"
+    cat "$USER_HOME/.migrate" | sed '1s|^|#!/usr/bin/env bash\nNONINTERACTIVE=1\n|' | grep -v '^#!/usr/bin/env bash' > "$USER_HOME/.migrate_auto"
     
     chmod +x "$USER_HOME/.migrate_auto"
     log "Created non-interactive .migrate_auto script"
