@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+
+###################### FIX
+###################### FIX
+###################### FIX
+###################### FIX
+###################### FIX
+###################### FIX
+## failed to git clone if bad password, try again feat
+
+
 ##############
 ## MIGRATION
 #
@@ -86,62 +96,73 @@ backup_conflicting_files() {
 # Function to checkout dotfiles with proper error handling
 checkout_dotfiles() {
     log_info "Checking out dotfiles from repository"
-    
-    if dots checkout; then
-        log_success "Checkout successful"
-        return 0
-    else
-        log_warning "Checkout failed due to conflicting files"
+    local max_retries=3
+    local attempt=1
+
+    while [ $attempt -le $max_retries ]; do
+        log_info "Attempt $attempt of $max_retries"
         
-        # Check if we're running in non-interactive mode (from ca.sh AUTO_MODE)
-        if [ -n "${NONINTERACTIVE:-}" ]; then
-            log_info "Running in non-interactive mode, automatically backing up conflicting files"
-            backup_conflicting_files
-            if dots checkout; then
-                log_success "Checkout successful after backup"
-                return 0
-            else
-                handle_error "Checkout failed even after backup" "exit"
-            fi
+        if dots checkout; then
+            log_success "Checkout successful"
             return 0
-        fi
-        
-        # Ask user how to handle conflicts
-        echo
-        echo "How would you like to handle conflicting files?"
-        echo "1) Backup conflicting files (recommended)"
-        echo "2) Delete conflicting files (not recommended)"
-        echo "3) Exit without changes"
-        echo
-        read -p "Enter your choice [1-3]: " choice
-        
-        case "$choice" in
-            1)
-                backup_conflicting_files
-                if dots checkout; then
-                    log_success "Checkout successful after backup"
-                    return 0
-                else
-                    handle_error "Checkout failed even after backup" "exit"
-                fi
-                ;;
-            2)
-                log_warning "Deleting conflicting files as requested"
-                local conflicts=$(dots checkout 2>&1 | grep -E '\s+\.' | awk '{print $1}')
-                echo "$conflicts" | xargs -I{} rm -f "$HOME/{}"
+        else
+            local error_message="Checkout failed"
+            local error_output=$(dots checkout 2>&1)
+            
+            if echo "$error_output" | grep -q "Authentication failed"; then
+                log_warning "Authentication failed. Please try again."
+                read -p "Press Enter to retry or Ctrl+C to cancel..."
+                attempt=$((attempt + 1))
+                continue
+            elif echo "$error_output" | grep -q "conflicting files"; then
+                log_warning "Checkout failed due to conflicting files"
                 
-                if dots checkout; then
-                    log_success "Checkout successful after deleting conflicts"
+                # Check if we're running in non-interactive mode (from ca.sh AUTO_MODE)
+                if [ -n "${NONINTERACTIVE:-}" ]; then
+                    log_info "Running in non-interactive mode, automatically backing up conflicting files"
+                    backup_conflicting_files
+                    if dots checkout; then
+                        log_success "Checkout successful after backup"
+                        return 0
+                    else
+                        handle_error "Checkout failed even after backup" "exit"
+                    fi
                     return 0
-                else
-                    handle_error "Checkout failed even after deleting conflicts" "exit"
                 fi
-                ;;
-            *)
-                handle_error "Exiting without changes" "exit"
-                ;;
-        esac
-    fi
+                
+                # Ask user how to handle conflicts
+                echo
+                echo "How would you like to handle conflicting files?"
+                echo "1) Backup conflicting files (recommended)"
+                echo "2) Delete conflicting files (not recommended)"
+                echo "3) Exit without changes"
+                echo
+                read -p "Enter your choice [1-3]: " choice
+                
+                case "$choice" in
+                    1)
+                        backup_conflicting_files
+                        continue # Retry checkout after backup
+                        ;;
+                    2)
+                        log_warning "Deleting conflicting files as requested"
+                        local conflicts=$(dots checkout 2>&1 | grep -E '\s+\.' | awk '{print $1}')
+                        echo "$conflicts" | xargs -I{} rm -f "$HOME/{}"
+                        continue # Retry checkout after deleting conflicts
+                        ;;
+                    *)
+                        handle_error "Exiting without changes" "exit"
+                        ;;
+                esac
+            else
+                log_error "Checkout failed with unexpected error: $error_message"
+                handle_error "Checkout failed" "exit"
+            fi
+        fi
+    done
+    
+    log_error "Maximum number of retries reached. Please check your GitHub credentials and try again."
+    handle_error "Maximum retries exceeded" "exit"
 }
 
 # Main script starts here
@@ -192,7 +213,9 @@ fi
 # Add function to bashrc if it doesn't exist
 if ! grep -q "dots()" "$HOME/.bashrc"; then
     log_info "Adding dots function to .bashrc"
-    echo "dots() { git --git-dir=\"$DOTFILES_DIR\" --work-tree=\"$HOME\" \"\$@\"; }" >> "$HOME/.bashrc"
+    echo "
+    dots() { git --git-dir=\"$DOTFILES_DIR\" --work-tree=\"$HOME\" \"\$@\"; }" >> "$HOME/.bashrc
+    "
     log_success "Added dots function to .bashrc"
 fi
 

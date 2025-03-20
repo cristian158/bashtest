@@ -2,6 +2,7 @@
 
 ## TODO
 ## maybe add rmlint and rmlint-shredder (gui)
+## fix the a flag option somewhere here
 
 ## removed the e flag to prevent the script from exiting on errors
 set -uo pipefail
@@ -496,7 +497,7 @@ main() {
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            --auto|a)
+            --auto|-a)
                 AUTO_MODE=true
                 RUN_MIGRATE=true
                 log "Running in automatic mode (god mode with elevated privileges)"
@@ -522,8 +523,8 @@ main() {
         log "Please run as a normal user. The script will use sudo for commands that need root privileges."
         exit 1
     fi
-# 1. Set RUN_MIGRATE=true by default when AUTO_MODE is enabled (already applied)
-# 2. Add automatic creation of non-interactive migrate script and bypass sudo check in AUTO_MODE
+#  Set RUN_MIGRATE=true by default when AUTO_MODE is enabled (already applied)
+#  Add automatic creation of non-interactive migrate script and bypass sudo check in AUTO_MODE
 # Set up auto mode if requested 
     if [ "$AUTO_MODE" = true ]; then
         if ! setup_auto_mode; then
@@ -564,7 +565,7 @@ main() {
         yes_no "Configure pacman" "sudo_if_needed cp \"$BASHTEST_DIR/pacman.conf\" \"/etc/pacman.conf\""
     fi
 
-# 3. Add --noconfirm flags to all pacman and yay commands in AUTO_MODE
+#  Add --noconfirm flags to all pacman and yay commands in AUTO_MODE
     # In AUTO_MODE, we'll use --noconfirm for pacman and yay to avoid prompts
     if [ "$AUTO_MODE" = true ]; then
         yes_no "Perform full system update" "sudo_if_needed pacman -Syu --noconfirm"
@@ -605,7 +606,7 @@ main() {
     yes_no "Install Qogir icon theme" "git clone https://github.com/vinceliuice/Qogir-icon-theme.git \"$TEMP_DIR/Qogir-icon-theme\" && (cd \"$TEMP_DIR/Qogir-icon-theme\" && ./install.sh -c standard -t manjaro)"
     yes_no "Install Tela icon theme" "git clone https://github.com/vinceliuice/Tela-icon-theme.git \"$TEMP_DIR/Tela-icon-theme\" && (cd \"$TEMP_DIR/Tela-icon-theme\" && ./install.sh)"
 
-# 4. Add --noconfirm flag to GTK engines installation in AUTO_MODE
+#  Add --noconfirm flag to GTK engines installation in AUTO_MODE
     if [ "$AUTO_MODE" = true ]; then
         yes_no "Install GTK engines" "yay -S --needed --noconfirm gtk-engine-murrine gtk-engines"
     else
@@ -624,23 +625,18 @@ main() {
     # Run .migrate automatically if in AUTO_MODE and the flag is set
     if [ "$AUTO_MODE" = true ] && [ "$RUN_MIGRATE" = true ]; then
         log "AUTO_MODE: Running .migrate automatically as part of the domino effect"
-        
-        if [ -x "$USER_HOME/.migrate_auto" ]; then
-            # Run non-interactive version in auto mode
-            log "AUTO_MODE: Executing non-interactive .migrate_auto"
-            (cd "$USER_HOME" && bash -c "./.migrate_auto")
-            migrate_status=$?
-        elif [ -x "$USER_HOME/.migrate" ]; then
-            # Run regular .migrate as fallback
-            log "Executing $USER_HOME/.migrate"
-            # Ensure we're in the home directory and use bash to execute the script
-            (cd "$USER_HOME" && bash -c "./.migrate")
-            migrate_status=$?
-        else
-            error "Cannot execute .migrate: file not found or not executable"
-            migrate_status=1
+
+        # Check if .migrate exists in the user's home directory
+        if [ ! -f "$USER_HOME/.migrate" ]; then
+            log "Copying .migrate from current directory to $USER_HOME"
+            cp "$PWD/.migrate" "$USER_HOME/.migrate"
         fi
-        
+
+        # Run regular .migrate
+        log "Executing $USER_HOME/.migrate"
+        (cd "$USER_HOME" && bash -c "./.migrate")
+        migrate_status=$?
+
         if [ "$migrate_status" -eq 0 ]; then
             log ".migrate execution completed successfully"
         else
