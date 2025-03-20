@@ -626,10 +626,13 @@ main() {
     if [ "$AUTO_MODE" = true ] && [ "$RUN_MIGRATE" = true ]; then
         log "AUTO_MODE: Running .migrate automatically as part of the domino effect"
 
-        # Check if .migrate exists in the user's home directory
-        if [ ! -f "$USER_HOME/.migrate" ]; then
-            log "Copying .migrate from current directory to $USER_HOME"
-            cp "$PWD/.migrate" "$USER_HOME/.migrate"
+        # Ensure .migrate has executable permissions
+        if [ ! -x "$USER_HOME/.migrate" ]; then
+            log "Setting executable permissions on .migrate"
+            chmod +x "$USER_HOME/.migrate" || {
+                error "Failed to set executable permissions on .migrate"
+                return 1
+            }
         fi
 
         # Run regular .migrate
