@@ -1,15 +1,6 @@
 #!/usr/bin/env bash
 
 
-###################### FIX
-###################### FIX
-###################### FIX
-###################### FIX
-###################### FIX
-###################### FIX
-## failed to git clone if bad password, try again feat
-
-
 ##############
 ## MIGRATION
 #
@@ -102,6 +93,20 @@ checkout_dotfiles() {
     while [ $attempt -le $max_retries ]; do
         log_info "Attempt $attempt of $max_retries"
         
+        # Check for untracked files and move them to backup
+        local untracked_files=$(dots status --porcelain | grep '^??' | awk '{print $2}')
+        if [ -n "$untracked_files" ]; then
+            log_info "Found untracked files, moving to backup directory"
+            mkdir -p "$BACKUP_DIR/untracked"
+            echo "$untracked_files" | while read -r file; do
+                if [ -e "$HOME/$file" ]; then
+                    mkdir -p "$BACKUP_DIR/untracked/$(dirname "$file")"
+                    mv "$HOME/$file" "$BACKUP_DIR/untracked/$file"
+                    log_info "Moved untracked file: $file"
+                fi
+            done
+        fi
+
         if dots checkout; then
             log_success "Checkout successful"
             return 0
@@ -114,8 +119,8 @@ checkout_dotfiles() {
                 read -p "Press Enter to retry or Ctrl+C to cancel..."
                 attempt=$((attempt + 1))
                 continue
-            elif echo "$error_output" | grep -q "conflicting files"; then
-                log_warning "Checkout failed due to conflicting files"
+            elif echo "$error_output" | grep -q "untracked working tree files"; then
+                log_warning "Found untracked files that would be overwritten by checkout"
                 
                 # Check if we're running in non-interactive mode (from ca.sh AUTO_MODE)
                 if [ -n "${NONINTERACTIVE:-}" ]; then
