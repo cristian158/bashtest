@@ -565,6 +565,8 @@ main() {
         yes_no "Configure pacman" "sudo_if_needed cp \"$BASHTEST_DIR/pacman.conf\" \"/etc/pacman.conf\""
     fi
 
+
+# tlp or auto-cpufreq
 #  Add --noconfirm flags to all pacman and yay commands in AUTO_MODE
     # In AUTO_MODE, we'll use --noconfirm for pacman and yay to avoid prompts
     if [ "$AUTO_MODE" = true ]; then
@@ -574,12 +576,12 @@ main() {
         # Split package installation into groups with --noconfirm
         yes_no "Install base packages" "yay -S --needed --noconfirm base-devel git curl wget"
         yes_no "Install window manager and utilities" "yay -S --needed --noconfirm bspwm sxhkd polybar dunst rofi feh picom"
-        yes_no "Install terminal" "yay -S --needed --noconfirm alacritty"
-        yes_no "Install system utilities" "yay -S --needed --noconfirm alsa-utils bluez bluez-utils network-manager-applet xclip ufw"
+        yes_no "Install system utilities" "yay -S --needed --noconfirm alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate ntfs-3g pacman-contrib reflector ripgrep rsync tldr udisks2 ueberzug timeshift rmlint gparted"
         yes_no "Install file managers and archivers" "yay -S --needed --noconfirm ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
         yes_no "Install text editors and development tools" "yay -S --needed --noconfirm neovim vim github-cli"
-        yes_no "Install media tools" "yay -S --needed --noconfirm mpd ncmpcpp sxiv"
-        yes_no "Install fonts and themes" "yay -S --needed --noconfirm ttf-iosevka ttf-nerd-fonts-symbols"
+        yes_no "Install media tools" "yay -S --needed --noconfirm mpd ncmpcpp sxiv nsxiv flameshot vlc qpdfview qrencode "
+        yes_no "Install fonts and themes" "yay -S --needed --noconfirm ttf-iosevka ttc-iosevka ttf-nerd-fonts-symbols gruvbox-plus-icon-theme"
+        yes_no "Install second layer software" "yay -S --needed --noconfirm ardour baobab bitwarden brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-landspa"
     else
         yes_no "Perform full system update" "sudo_if_needed pacman -Syu"
         yes_no "Install Yay" "install_yay"
@@ -587,12 +589,12 @@ main() {
         # Split package installation into groups
         yes_no "Install base packages" "yay -S --needed base-devel git curl wget"
         yes_no "Install window manager and utilities" "yay -S --needed bspwm sxhkd polybar dunst rofi feh picom"
-        yes_no "Install terminal" "yay -S --needed alacritty"
-        yes_no "Install system utilities" "yay -S --needed alsa-utils bluez bluez-utils network-manager-applet xclip ufw"
+        yes_no "Install system utilities" "yay -S --needed alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate ntfs-3g pacman-contrib reflector ripgrep rsync tldr udisks2 ueberzug timeshift rmlint gparted"
         yes_no "Install file managers and archivers" "yay -S --needed ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
         yes_no "Install text editors and development tools" "yay -S --needed neovim vim github-cli"
-        yes_no "Install media tools" "yay -S --needed mpd ncmpcpp sxiv"
-        yes_no "Install fonts and themes" "yay -S --needed ttf-iosevka ttf-nerd-fonts-symbols"
+        yes_no "Install media tools" "yay -S --needed mpd ncmpcpp sxiv nsxiv flameshot vlc qpdfview qrencode "
+        yes_no "Install fonts and themes" "yay -S --needed ttf-iosevka ttc-iosevka ttf-nerd-fonts-symbols gruvbox-plus-icon-theme"
+        yes_no "Install second layer software" "yay -S --needed ardour baobab bitwarden brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-landspa"
     fi
 
     if check_dir_exists "$CONFIG_DIR/ranger/plugins"; then
