@@ -59,6 +59,13 @@ $ shred -vufzn 4                                 // -v verbose
                                                  // -z final overwrite with zeros
                                                  // no flags, overwrite 3 times
 
+## Use the find command to execute shred -uvz recursively:
+$ find path/to/dir/ -type f -exec shred -vufzn 3 {} \; // shred directory recursively
+
+
+find path/to/dir/ -type f -print0 | xargs -0 -I {} sh -c 'printf "\033[3$((RANDOM%6+1))m"; shred -vufzn 3 "$1"; printf "\033[0m"' sh {}
+
+
 
 ###############
 ###   ZIP   ###
