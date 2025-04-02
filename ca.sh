@@ -20,8 +20,6 @@ LOG_FILE="$BASHTEST_DIR/script.log"
 # AUTO_MODE true --> script run automatically, execute all operations no asking for confirmation
 AUTO_MODE=false
 TEMP_DIR="/tmp/temp_cash"
-# Variable to track if .migrate should be run at the end (for AUTO_MODE)
-RUN_MIGRATE=false
 
 # Ensure log directory exists
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
@@ -133,23 +131,6 @@ setup_auto_mode() {
     return 0
 }
 
-# Function to create a non-interactive version of .migrate
-create_noninteractive_migrate() {
-    log "Creating non-interactive version of .migrate"
-    
-    if [ ! -f "$USER_HOME/.migrate" ]; then
-        error "Cannot find .migrate script"
-        return 1
-    fi
-    
-    # Create a modified version that sets NONINTERACTIVE environment variable
-    cat "$USER_HOME/.migrate" | sed '1s|^|#!/usr/bin/env bash\nNONINTERACTIVE=1\n|' | grep -v '^#!/usr/bin/env bash' > "$USER_HOME/.migrate_auto"
-    
-    chmod +x "$USER_HOME/.migrate_auto"
-    log "Created non-interactive .migrate_auto script"
-    
-    return 0
-}
 yes_no() {
     local prompt="$1"
     local action="$2"
@@ -186,7 +167,8 @@ yes_no() {
     done
     return 0
 }
-# 5. Modify the install_yay function to use --noconfirm flags in AUTO_MODE
+
+# install_yay --noconfirm in AUTO_MODE
 install_yay() {
     log "Installing Yay"
     
@@ -248,6 +230,24 @@ install_yay() {
     return 0
 }
 
+rangit() {
+	git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\
+	
+	ranger --copy-config=all
+	
+	echo "
+        #########################
+        ### Added by CASH 
+
+        default_linemode devicons
+        set preview_images true
+        set preview_images_method ueberzug
+
+        map DD shell mv %s /home/${USER}/.local/share/Trash/files/
+
+        " >> $HOME/.config/ranger/rc.conf
+}
+
 configure_system_files() {
     log "Configuring system files"
 
@@ -255,7 +255,6 @@ configure_system_files() {
     declare -A file_ops=(
         ["$BASHTEST_DIR/nobeep.conf"]="/etc/modprobe.d/nobeep.conf:Disable PC speaker beep"
         ["$BASHTEST_DIR/30-touchpad.conf"]="/etc/X11/xorg.conf.d/30-touchpad:Touchpad configuration"
-        ["$BASHTEST_DIR/.migrate"]="$USER_HOME/.migrate:Migration file"
         ["$BASHTEST_DIR/audio_disable_powersave.conf"]="/etc/modprobe.d/audio_disable_powersave.conf:Disable Audio Powersave mode"
     )
 
@@ -313,6 +312,12 @@ configure_system_files() {
         log "Created Flameshot directory"
     else
         error "Failed to create Flameshot directory"
+    fi
+
+    # Create .local/share/gnupg
+    if ! mkdir -p "$USER_HOME/.local/share/gnupg"; then
+        error "Failed to create Pictures directory"
+        return 1  
     fi
     
     return 0
@@ -424,59 +429,27 @@ EOL
     return 0
 }
 
-setup_dotfiles() {
-    log "Setting up dotfiles"
-    
-    # Copy the .migrate script to the user's home directory if it doesn't exist
-    if [ ! -f "$USER_HOME/.migrate" ]; then
-        if ! cp "$BASHTEST_DIR/.migrate" "$USER_HOME/.migrate"; then
-            error "Failed to copy .migrate script to home directory"
-            return 1
-        fi
-        
-        if ! chmod +x "$USER_HOME/.migrate"; then
-            error "Failed to make .migrate script executable"
-            return 1
-        fi
-        
-        log "Copied .migrate script to home directory"
-    else
-        log ".migrate script already exists in home directory"
-    fi
-    
-    # In AUTO_MODE, create a non-interactive version of .migrate
-    if [ "$AUTO_MODE" = true ]; then
-        create_noninteractive_migrate
-        RUN_MIGRATE=true
-        log "Dotfiles setup: .migrate will be executed automatically at the end of the script"
-    else
-        # Inform the user about the next step
-        log "Dotfiles setup: Please run ~/.migrate after this script completes to set up your dotfiles"
-    fi
-    
-    return 0
-}
 
-# 6. Modify setup_zsh function to use --noconfirm flags in AUTO_MODE
+# Modify setup_zsh function to use --noconfirm flags in AUTO_MODE
 setup_zsh() {
     log "Setting up Zsh and related tools"
     
     if [ "$AUTO_MODE" = true ]; then
         yes_no "Install Zsh" "yay -S --needed --noconfirm zsh"
         
-        yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.powerlevel10k\" && echo 'source ~/.powerlevel10k/powerlevel10k.zsh-theme' >> \"$USER_HOME/.zshrc\""
+        yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.config/powerlevel10k\""
         
         yes_no "Install Zsh addons" "yay -S --needed --noconfirm zsh-autosuggestions zsh-syntax-highlighting"
         
-        yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
+        # yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
     else
         yes_no "Install Zsh" "yay -S --needed zsh"
         
-        yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.powerlevel10k\" && echo 'source ~/.powerlevel10k/powerlevel10k.zsh-theme' >> \"$USER_HOME/.zshrc\""
+        yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.config/powerlevel10k\""
         
         yes_no "Install Zsh addons" "yay -S --needed zsh-autosuggestions zsh-syntax-highlighting"
         
-        yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
+        # yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
     fi
     
     log "Zsh setup completed"
@@ -522,16 +495,6 @@ main() {
         error "This script should not be run as root"
         log "Please run as a normal user. The script will use sudo for commands that need root privileges."
         exit 1
-    fi
-#  Set RUN_MIGRATE=true by default when AUTO_MODE is enabled (already applied)
-#  Add automatic creation of non-interactive migrate script and bypass sudo check in AUTO_MODE
-# Set up auto mode if requested 
-    if [ "$AUTO_MODE" = true ]; then
-        if ! setup_auto_mode; then
-            log "Warning: Failed to set up auto mode, continuing with regular sudo"
-        fi
-        # Create non-interactive migrate script in auto mode
-        create_noninteractive_migrate
     fi
     
     # Check if sudo is available and the user has sudo privileges
@@ -597,18 +560,13 @@ main() {
         yes_no "Install second layer software" "yay -S --needed ardour baobab bitwarden brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-landspa"
     fi
 
-    if check_dir_exists "$CONFIG_DIR/ranger/plugins"; then
-        yes_no "Install Ranger DevIcons" "git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\" && ranger --copy-config=all"
-    else
-        yes_no "Install Ranger DevIcons" "mkdir -p \"$CONFIG_DIR/ranger/plugins\" && git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\" && ranger --copy-config=all"
-    fi
-    
+    yes_no "Install Ranger DevIcons" "rangit"
     yes_no "Install NvChad" "git clone https://github.com/NvChad/NvChad \"$CONFIG_DIR/nvim\" --depth 1"
     yes_no "Install Matcha GTK theme" "git clone https://github.com/vinceliuice/Matcha-gtk-theme.git \"$TEMP_DIR/Matcha-gtk-theme\" && (cd \"$TEMP_DIR/Matcha-gtk-theme\" && ./install.sh -c dark -t sea)"
     yes_no "Install Qogir icon theme" "git clone https://github.com/vinceliuice/Qogir-icon-theme.git \"$TEMP_DIR/Qogir-icon-theme\" && (cd \"$TEMP_DIR/Qogir-icon-theme\" && ./install.sh -c standard -t manjaro)"
     yes_no "Install Tela icon theme" "git clone https://github.com/vinceliuice/Tela-icon-theme.git \"$TEMP_DIR/Tela-icon-theme\" && (cd \"$TEMP_DIR/Tela-icon-theme\" && ./install.sh)"
 
-#  Add --noconfirm flag to GTK engines installation in AUTO_MODE
+    # Add --noconfirm flag to GTK engines installation in AUTO_MODE
     if [ "$AUTO_MODE" = true ]; then
         yes_no "Install GTK engines" "yay -S --needed --noconfirm gtk-engine-murrine gtk-engines"
     else
@@ -620,34 +578,9 @@ main() {
 
     yes_no "Configure system files" "configure_system_files"
     yes_no "Setup battery monitor" "setup_batnotify"
-    yes_no "Setup dotfiles" "setup_dotfiles"
 
     log "Script execution completed. Check the log for details on which operations were performed or skipped."
-    
-    # Run .migrate automatically if in AUTO_MODE and the flag is set
-    if [ "$AUTO_MODE" = true ] && [ "$RUN_MIGRATE" = true ]; then
-        log "AUTO_MODE: Running .migrate automatically as part of the domino effect"
 
-        # Ensure .migrate has executable permissions
-        if [ ! -x "$USER_HOME/.migrate" ]; then
-            log "Setting executable permissions on .migrate"
-            chmod +x "$USER_HOME/.migrate" || {
-                error "Failed to set executable permissions on .migrate"
-                return 1
-            }
-        fi
-
-        # Run regular .migrate
-        log "Executing $USER_HOME/.migrate"
-        (cd "$USER_HOME" && bash -c "./.migrate")
-        migrate_status=$?
-
-        if [ "$migrate_status" -eq 0 ]; then
-            log ".migrate execution completed successfully"
-        else
-            error ".migrate execution failed with exit code $migrate_status"
-        fi
-    fi
 }
 
 # Set up trap handlers
@@ -655,3 +588,10 @@ trap cleanup EXIT
 trap 'echo "Script interrupted. Exiting..."; exit 1' SIGINT SIGTERM
 
 main "$@"
+
+
+
+
+#################################################
+####### AFTER INSTALL
+## check /etc/passwd for right shell to user
