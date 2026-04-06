@@ -1,0 +1,98 @@
+[2025-04-03 02:48:50] Running in automatic mode (god mode with elevated privileges)
+[2025-04-03 02:48:51] Welcome to:
+[2025-04-03 02:48:51] AUTO_MODE: Configure pacman
+[2025-04-03 02:48:51] Configure pacman - Completed automatically (AUTO_MODE)
+[2025-04-03 02:48:51] AUTO_MODE: Perform full system update
+[2025-04-03 02:48:52] Perform full system update - Completed automatically (AUTO_MODE)
+[2025-04-03 02:48:52] AUTO_MODE: Install Yay
+[2025-04-03 02:48:52] Installing Yay
+[2025-04-03 02:49:33] Yay installation completed successfully
+[2025-04-03 02:49:33] Install Yay - Completed automatically (AUTO_MODE)
+[2025-04-03 02:49:33] AUTO_MODE: Install base packages
+[2025-04-03 02:49:33] Install base packages - Completed automatically (AUTO_MODE)
+[2025-04-03 02:49:33] AUTO_MODE: Install window manager and utilities
+[2025-04-03 02:49:35] Install window manager and utilities - Completed automatically (AUTO_MODE)
+[2025-04-03 02:49:35] AUTO_MODE: Install system utilities
+[2025-04-03 02:50:11] Install system utilities - Failed and continuing...
+[2025-04-03 02:50:11] AUTO_MODE: Install file managers and archivers
+[2025-04-03 02:50:14] Install file managers and archivers - Completed automatically (AUTO_MODE)
+[2025-04-03 02:50:14] AUTO_MODE: Install text editors and development tools
+[2025-04-03 02:50:21] Install text editors and development tools - Completed automatically (AUTO_MODE)
+[2025-04-03 02:50:21] AUTO_MODE: Install media tools
+[2025-04-03 02:53:05] Install media tools - Completed automatically (AUTO_MODE)
+[2025-04-03 02:53:05] AUTO_MODE: Install fonts and themes
+[2025-04-03 02:54:43] Install fonts and themes - Completed automatically (AUTO_MODE)
+[2025-04-03 02:54:43] AUTO_MODE: Install second layer software
+[2025-04-03 03:00:02] Install second layer software - Completed automatically (AUTO_MODE)
+[2025-04-03 03:00:02] AUTO_MODE: Install Ranger DevIcons
+[2025-04-03 03:00:03] Install Ranger DevIcons - Completed automatically (AUTO_MODE)
+[2025-04-03 03:00:03] AUTO_MODE: Install NvChad
+[2025-04-03 03:00:04] Install NvChad - Completed automatically (AUTO_MODE)
+[2025-04-03 03:00:04] AUTO_MODE: Install Matcha GTK theme
+[2025-04-03 03:00:10] Install Matcha GTK theme - Completed automatically (AUTO_MODE)
+[2025-04-03 03:00:10] AUTO_MODE: Install Qogir icon theme
+[2025-04-03 03:00:14] Install Qogir icon theme - Completed automatically (AUTO_MODE)
+[2025-04-03 03:00:14] AUTO_MODE: Install Tela icon theme
+[2025-04-03 03:00:22] Cleaning up temporary files
+[2025-04-03 03:00:23] Cleanup complete
+[2025-04-03 03:01:01] Running in automatic mode (god mode with elevated privileges)
+[2025-04-03 03:01:03] Welcome to:
+[2025-04-03 03:01:03] AUTO_MODE: Configure pacman
+[2025-04-03 03:01:03] Configure pacman - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:03] AUTO_MODE: Perform full system update
+[2025-04-03 03:01:06] Perform full system update - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:06] AUTO_MODE: Install Yay
+[2025-04-03 03:01:06] Installing Yay
+[2025-04-03 03:01:27] Yay installation completed successfully
+[2025-04-03 03:01:27] Install Yay - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:27] AUTO_MODE: Install base packages
+[2025-04-03 03:01:27] Install base packages - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:27] AUTO_MODE: Install window manager and utilities
+[2025-04-03 03:01:28] Install window manager and utilities - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:28] AUTO_MODE: Install system utilities
+[2025-04-03 03:01:42] Install system utilities - Failed and continuing...
+[2025-04-03 03:01:42] AUTO_MODE: Install file managers and archivers
+[2025-04-03 03:01:42] Install file managers and archivers - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:42] AUTO_MODE: Install text editors and development tools
+[2025-04-03 03:01:42] Install text editors and development tools - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:42] AUTO_MODE: Install media tools
+[2025-04-03 03:01:44] Install media tools - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:44] AUTO_MODE: Install fonts and themes
+[2025-04-03 03:01:45] Install fonts and themes - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:45] AUTO_MODE: Install second layer software
+[2025-04-03 03:01:47] Install second layer software - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:47] AUTO_MODE: Install Ranger DevIcons
+[2025-04-03 03:01:48] Install Ranger DevIcons - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:48] AUTO_MODE: Install NvChad
+[2025-04-03 03:01:48] Install NvChad - Failed and continuing...
+[2025-04-03 03:01:48] AUTO_MODE: Install Matcha GTK theme
+[2025-04-03 03:01:52] Install Matcha GTK theme - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:52] AUTO_MODE: Install Qogir icon theme
+[2025-04-03 03:01:59] Install Qogir icon theme - Completed automatically (AUTO_MODE)
+[2025-04-03 03:01:59] AUTO_MODE: Install Tela icon theme
+[2025-04-03 03:02:05] Install Tela icon theme - Completed automatically (AUTO_MODE)
+[2025-04-03 03:02:05] AUTO_MODE: Install GTK engines
+[2025-04-03 03:02:06] Install GTK engines - Completed automatically (AUTO_MODE)
+[2025-04-03 03:02:06] Setting up Zsh and related tools
+[2025-04-03 03:02:06] AUTO_MODE: Install Zsh
+[2025-04-03 03:02:08] Install Zsh - Completed automatically (AUTO_MODE)
+[2025-04-03 03:02:08] AUTO_MODE: Install Powerlevel10k
+[2025-04-03 03:02:09] Install Powerlevel10k - Completed automatically (AUTO_MODE)
+[2025-04-03 03:02:09] AUTO_MODE: Install Zsh addons
+[2025-04-03 03:02:10] Install Zsh addons - Completed automatically (AUTO_MODE)
+[2025-04-03 03:02:10] Zsh setup completed
+[2025-04-03 03:02:10] AUTO_MODE: Configure system files
+[2025-04-03 03:02:10] Configuring system files
+[2025-04-03 03:02:10] Successfully copied Disable PC speaker beep to /etc/modprobe.d/nobeep.conf
+[2025-04-03 03:02:10] Successfully copied Disable Audio Powersave mode to /etc/modprobe.d/audio_disable_powersave.conf
+[2025-04-03 03:02:10] Successfully copied Touchpad configuration to /etc/X11/xorg.conf.d/30-touchpad
+[2025-04-03 03:02:10] Created Flameshot directory
+[2025-04-03 03:02:10] Configure system files - Completed automatically (AUTO_MODE)
+[2025-04-03 03:02:10] AUTO_MODE: Setup battery monitor
+[2025-04-03 03:02:10] Setting up battery monitor
+[2025-04-03 03:02:11] Battery monitor service enabled and started
+[2025-04-03 03:02:11] Battery monitor setup complete
+[2025-04-03 03:02:11] Setup battery monitor - Completed automatically (AUTO_MODE)
+[2025-04-03 03:02:11] Script execution completed. Check the log for details on which operations were performed or skipped.
+[2025-04-03 03:02:11] Cleaning up temporary files
+[2025-04-03 03:02:11] Cleanup complete

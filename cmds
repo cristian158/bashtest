@@ -3,9 +3,9 @@
 ###   DEVICES ###
 #################
 
+$ sudo mount /dev/sdxy /run/myflashhh
 $ sudo mount -t ntfs-3g /dev/sdxy /run/dribe
-
-
+$ cat /sys/block/---/queue/rotational           // 1: hdd; 0: ssd
 
 
 #################
@@ -17,6 +17,11 @@ $ mkdir -p ~/.config/{bspwm,sxhkd}                // -p make parent dirs as need
 
 $ mkdir -p dir2/folders{1,2}                      // create subirs folders1 and folders2
 
+################
+###   VIM    ###
+################
+
+:w !sudo tee %					  // writes file w/elevated privileges. It asks for as terminal, can't do it
 
 ################
 ###   COPY   ###
@@ -143,11 +148,14 @@ reflector --latest 50 --number 20 --sort score --save ...
 #still have to try next one:
 $ mtr archlinux.org                              // investigate net connex; mixes funcx of ping and traceroute
 
+$ curl -F "file=@filename.foo" 0x0.st           // cloud
+
+
 ##################
 ###   KERNEL   ###
 ##################
 
-$ uname -srm					       // -s --kernel-name
+$ uname -srm					 // -s --kernel-name
                                                  // -r --kernel-release
                                                  // -m --machine (hardware name)
 
@@ -203,21 +211,21 @@ mkdir .local/share/gnupg
 
 $ nohup <SOMEPKG> &                             // start from/indie of terminal
 
-$ xdg-open file.txt                             // open file
-$ xdg-mime query filetype file.pdf              // get filetype
-$ xdg-mime query default application/pdf        // ask default pdf app 
-$ xdg-mime default some_app.desktop application/pdf // set some_app as default pdf
-                                                    // if .desktop doesnt exist, create in /usr/share/applications/
+$ xdg-open file.txt					// open file
+$ xdg-mime query filetype file.pdf			// get filetype
+$ xdg-mime query default application/pdf		// ask default pdf app 
+$ xdg-mime default some_app.desktop application/pdf 	// set some_app as default pdf
+                                                    	// if .desktop doesnt exist, create in /usr/share/applications/
 
-$ /bin/ls                                       // outputs original ls w/o aliases
+$ /bin/ls						// outputs original ls w/o aliases
 $ /bin/ls | entr -s 'firefox localhost:3000'
 
-$ cd -                                          // into last dir
+$ cd -							// into last dir
 
-$ ^r                                            // search cmd mode
-                                                // ^R again, search next one
+$ ^r							// search cmd mode
+							// ^R again, search next one
 
-$ history                                       // show cmds history
+$ history						// show cmds history
 ## add to bashrc (have to try on zshrc):
 ## HISTTIMEFORMAT="%Y-%m-%d %T "	
 
@@ -231,14 +239,12 @@ $ grep 'string' directory-path/*.*              // find 'string' in all files of
 
 
 
-$ curl -F "file=@filename.foo" 0x0.st           // cloud
-
 $ pstree                                        // show processes currently running on system
 
 
 $ sudo loadkeys -d                              // change keyboard layout to default
 
-$ cat /sys/block/---/queue/rotational           // 1: hdd; 0: ssd
+
 
 $ cat error.log | sort | uniq                   // cat to read file 
                                                 // sort it line by line 
@@ -250,4 +256,7 @@ echo $(find . -maxdepth 2 -type d) >> ALBUMS
 ## edit /etc/makepkg.conf around line 53, MAKEFLAGS='j6', 6 cores when building stuff instead of 2
 
 
-$ find . -name "*.asd" -type f -delete          // find all asd files in this tree and delete them
+$ find . -name "*.asd" -type f -delete          // find all asd files in current tree and delete them
+                                                // -type f: files
+                                                // -type d: directories 
+$ find /var/log -size +10M                      // Find files larger than 10 megabytes.

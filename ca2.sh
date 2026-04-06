@@ -44,13 +44,6 @@ check_file_exists() {
     return 0
 }
 
-check_dir_exists() {
-    if [ ! -d "$1" ]; then
-        log "Warning: Directory $1 does not exist"
-        return 1
-    fi
-    return 0
-}
 
 # Check if user has sudo privileges
 check_sudo() {
@@ -85,47 +78,6 @@ Customized Arch System Helper
 "
 }
 
-# Configure sudo to not require password in AUTO_MODE
-setup_auto_mode() {
-    log "Setting up auto mode (passwordless sudo)"
-    
-    # Check if we're already root
-    if [ "$(id -u)" -eq 0 ]; then
-        log "Already running as root, no need to configure sudo"
-        return 0
-    fi
-    
-    # Create a temporary sudoers file
-    local temp_sudoers="/tmp/temp_sudoers_$$"
-    local current_user="$(whoami)"
-    
-    echo "$current_user ALL=(ALL) NOPASSWD: ALL" > "$temp_sudoers"
-    
-    # Check syntax
-    if ! visudo -c -f "$temp_sudoers"; then
-        error "Failed to create valid sudoers file"
-        rm -f "$temp_sudoers"
-        return 1
-    fi
-    
-    # Add to sudoers.d
-    if ! sudo cp "$temp_sudoers" "/etc/sudoers.d/99_$current_user"; then
-        error "Failed to install sudoers file"
-        rm -f "$temp_sudoers"
-        return 1
-    fi
-    
-    # Set proper permissions
-    if ! sudo chmod 0440 "/etc/sudoers.d/99_$current_user"; then
-        error "Failed to set permissions on sudoers file"
-        return 1
-    fi
-    
-    rm -f "$temp_sudoers"
-    log "Auto mode configured successfully - sudo will no longer prompt for password"
-    
-    return 0
-}
 
 yes_no() {
     local prompt="$1"
@@ -227,13 +179,13 @@ install_yay() {
 }
 
 rangit() {
-	git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\"
-	
+	git clone https://github.com/alexanderjeurissen/ranger_devicons "$CONFIG_DIR/ranger/plugins/ranger_devicons"
+
 	ranger --copy-config=all
-	
+
 	echo "
         #########################
-        ### Added by CASH 
+        ### Added by CASH
 
         default_linemode devicons
         set preview_images true
@@ -241,7 +193,7 @@ rangit() {
 
         map DD shell mv %s $USER_HOME/.local/share/Trash/files/
 
-        " >> $CONFIG_DIR/ranger/rc.conf
+        " >> "$USER_HOME/.config/ranger/rc.conf"
 }
 
 configure_system_files() {
@@ -300,7 +252,7 @@ configure_system_files() {
     if [ ! -d "$USER_HOME/00/Pictures" ]; then
         if ! mkdir -p "$USER_HOME/00/Pictures"; then
             error "Failed to create Pictures directory"
-            return 0  
+            return 1
         fi
     fi
     
@@ -312,8 +264,8 @@ configure_system_files() {
 
     # Create .local/share/gnupg
     if ! mkdir -p "$USER_HOME/.local/share/gnupg"; then
-        error "Failed to create gnup directory"
-        return 1  
+        error "Failed to create gnupg directory"
+        return 1
     fi
     
     return 0
@@ -346,20 +298,20 @@ mkdir -p "$HOME/.local/share" 2>/dev/null || true
 
 while true; do
     # Check if battery exists
-    if ! ls /sys/class/power_supply/BAT* &>/dev/null; then
+    if ! [ -f /sys/class/power_supply/BAT0/capacity ]; then
         log_error "No battery found"
         sleep 300
         continue
     fi
-    
+
     # Read battery info with error handling
-    if ! battery_level=$(cat /sys/class/power_supply/BAT*/capacity 2>/dev/null); then
+    if ! battery_level=$(cat /sys/class/power_supply/BAT0/capacity 2>/dev/null); then
         log_error "Failed to read battery level"
         sleep 300
         continue
     fi
-    
-    if ! battery_status=$(cat /sys/class/power_supply/BAT*/status 2>/dev/null); then
+
+    if ! battery_status=$(cat /sys/class/power_supply/BAT0/status 2>/dev/null); then
         log_error "Failed to read battery status"
         sleep 300
         continue
@@ -389,20 +341,20 @@ EOL
     fi
     
     # Create a systemd user service
-    cat > "$USER_HOME/.config/systemd/user/batnotify.service" << EOL
+    cat > "$USER_HOME/.config/systemd/user/batnotify.service" << EOF
 [Unit]
 Description=Battery Notification Service
 After=graphical-session.target
 PartOf=graphical-session.target
 
 [Service]
-ExecStart=$USER_HOME/.local/bin/batnotify.sh
+ExecStart="$USER_HOME/.local/bin/batnotify.sh"
 Restart=always
 RestartSec=30
 
 [Install]
 WantedBy=default.target
-EOL
+EOF
 
     if [ -f "$USER_HOME/.config/systemd/user/batnotify.service" ]; then
         if ! systemctl --user enable batnotify.service; then
@@ -432,20 +384,16 @@ setup_zsh() {
     
     if [ "$AUTO_MODE" = true ]; then
         yes_no "Install Zsh" "yay -S --needed --noconfirm zsh"
-        
-        yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.config/powerlevel10k\""
-        
+
+        yes_no "Install Powerlevel10k" "[ ! -d \"$USER_HOME/.config/powerlevel10k\" ] && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.config/powerlevel10k\""
+
         yes_no "Install Zsh addons" "yay -S --needed --noconfirm zsh-autosuggestions zsh-syntax-highlighting"
-        
-        # yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
     else
         yes_no "Install Zsh" "yay -S --needed zsh"
-        
-        yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.config/powerlevel10k\""
-        
+
+        yes_no "Install Powerlevel10k" "[ ! -d \"$USER_HOME/.config/powerlevel10k\" ] && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.config/powerlevel10k\""
+
         yes_no "Install Zsh addons" "yay -S --needed zsh-autosuggestions zsh-syntax-highlighting"
-        
-        # yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
     fi
     
     log "Zsh setup completed"
@@ -468,7 +416,6 @@ main() {
         case "$1" in
             --auto|-a)
                 AUTO_MODE=true
-                RUN_MIGRATE=true
                 log "Running in automatic mode (god mode with elevated privileges)"
                 shift
                 ;;
@@ -502,7 +449,7 @@ main() {
             yes_no "Continue without sudo privileges?" "true" || exit 1
         fi
     fi
-
+    
     # Check if running on Arch Linux
     if [ ! -f "/etc/arch-release" ]; then
         log "Warning: This script is designed for Arch Linux but the system doesn't appear to be Arch"
@@ -528,12 +475,12 @@ main() {
         # Split package installation into groups with --noconfirm
         yes_no "Install base packages" "yay -S --needed --noconfirm base-devel git curl wget"
         yes_no "Install window manager and utilities" "yay -S --needed --noconfirm bspwm sxhkd polybar dunst rofi feh picom"
-        yes_no "Install system utilities" "yay -S --needed --noconfirm alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate ntfs-3g pacman-contrib reflector ripgrep rsync tldr udisks2 ueberzug timeshift rmlint gparted bettercap fzf i3lock-color nmap"
-        yes_no "Install file managers and archivers" "yay -S --needed --noconfirm ranger pcmanfm-gtk3 p7zip xarchiver"
+        yes_no "Install system utilities" "yay -S --needed --noconfirm alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate pacman-contrib reflector ripgrep rsync tldr udisks2 ueberzug timeshift rmlint gparted"
+        yes_no "Install file managers and archivers" "yay -S --needed --noconfirm ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
         yes_no "Install text editors and development tools" "yay -S --needed --noconfirm neovim vim github-cli"
         yes_no "Install media tools" "yay -S --needed --noconfirm mpd ncmpcpp sxiv nsxiv flameshot vlc qpdfview qrencode "
         yes_no "Install fonts and themes" "yay -S --needed --noconfirm ttf-iosevka ttc-iosevka ttf-nerd-fonts-symbols gruvbox-plus-icon-theme"
-        yes_no "Install second layer software" "yay -S --needed --noconfirm ardour baobab bitwarden brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-landspa darktable"
+        yes_no "Install second layer software" "yay -S --needed --noconfirm ardour baobab bitwarden brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-landspa"
     else
         yes_no "Perform full system update" "sudo_if_needed pacman -Syu"
         yes_no "Install Yay" "install_yay"
@@ -541,19 +488,19 @@ main() {
         # Split package installation into groups
         yes_no "Install base packages" "yay -S --needed base-devel git curl wget"
         yes_no "Install window manager and utilities" "yay -S --needed bspwm sxhkd polybar dunst rofi feh picom"
-        yes_no "Install system utilities" "yay -S --needed alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate ntfs-3g pacman-contrib reflector ripgrep rsync tldr udisks2 ueberzug timeshift rmlint gparted bettercap fzf i3lock-color nmap"
-        yes_no "Install file managers and archivers" "yay -S --needed ranger pcmanfm-gtk3 p7zip xarchiver"
+        yes_no "Install system utilities" "yay -S --needed alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate pacman-contrib reflector ripgrep rsync tldr udisks2 ueberzug timeshift rmlint gparted"
+        yes_no "Install file managers and archivers" "yay -S --needed ranger pcmanfm-gtk3 p7zip xarchiver-gtk2"
         yes_no "Install text editors and development tools" "yay -S --needed neovim vim github-cli"
-        yes_no "Install media tools" "yay -S --needed mpd ncmpcpp sxiv nsxiv flameshot vlc qpdfview qrencode"
+        yes_no "Install media tools" "yay -S --needed mpd ncmpcpp sxiv nsxiv flameshot vlc qpdfview qrencode "
         yes_no "Install fonts and themes" "yay -S --needed ttf-iosevka ttc-iosevka ttf-nerd-fonts-symbols gruvbox-plus-icon-theme"
-        yes_no "Install second layer software" "yay -S --needed ardour baobab bitwarden brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-landspa darktable"
+        yes_no "Install second layer software" "yay -S --needed ardour baobab bitwarden brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-landspa"
     fi
 
     yes_no "Install Ranger DevIcons" "rangit"
-    yes_no "Install NvChad" "git clone https://github.com/NvChad/starter \"$CONFIG_DIR/nvim\" --depth 1" # delete .git
-    yes_no "Install Matcha GTK theme" "git clone https://github.com/vinceliuice/Matcha-gtk-theme.git \"$TEMP_DIR/Matcha-gtk-theme\" && (cd \"$TEMP_DIR/Matcha-gtk-theme\" && ./install.sh -c dark -t sea)"
-    yes_no "Install Qogir icon theme" "git clone https://github.com/vinceliuice/Qogir-icon-theme.git \"$TEMP_DIR/Qogir-icon-theme\" && (cd \"$TEMP_DIR/Qogir-icon-theme\" && ./install.sh -c standard -t manjaro)"
-    yes_no "Install Tela icon theme" "git clone https://github.com/vinceliuice/Tela-icon-theme.git \"$TEMP_DIR/Tela-icon-theme\" && (cd \"$TEMP_DIR/Tela-icon-theme\" && ./install.sh)"
+    yes_no "Install NvChad" "[ ! -d \"$CONFIG_DIR/nvim\" ] && git clone https://github.com/NvChad/starter \"$CONFIG_DIR/nvim\" --depth 1" # delete .git
+    yes_no "Install Matcha GTK theme" "[ ! -d \"$TEMP_DIR/Matcha-gtk-theme\" ] && git clone https://github.com/vinceliuice/Matcha-gtk-theme.git \"$TEMP_DIR/Matcha-gtk-theme\"; (cd \"$TEMP_DIR/Matcha-gtk-theme\" && ./install.sh -c dark -t sea)"
+    yes_no "Install Qogir icon theme" "[ ! -d \"$TEMP_DIR/Qogir-icon-theme\" ] && git clone https://github.com/vinceliuice/Qogir-icon-theme.git \"$TEMP_DIR/Qogir-icon-theme\"; (cd \"$TEMP_DIR/Qogir-icon-theme\" && ./install.sh -c standard -t manjaro)"
+    yes_no "Install Tela icon theme" "[ ! -d \"$TEMP_DIR/Tela-icon-theme\" ] && git clone https://github.com/vinceliuice/Tela-icon-theme.git \"$TEMP_DIR/Tela-icon-theme\"; (cd \"$TEMP_DIR/Tela-icon-theme\" && ./install.sh)"
 
     # Add --noconfirm flag to GTK engines installation in AUTO_MODE
     if [ "$AUTO_MODE" = true ]; then
@@ -568,8 +515,7 @@ main() {
     yes_no "Configure system files" "configure_system_files"
     yes_no "Setup battery monitor" "setup_batnotify"
 
-    # Add flag file to indicate ca.sh completion
-    # Create a flag file to indicate ca.sh has been run
+    # Create flag file to indicate ca.sh completion in AUTO_MODE
     if [ "$AUTO_MODE" = true ]; then
         touch "$USER_HOME/.ca_sh_completed"
         log "Created flag file to indicate ca.sh completion"
@@ -584,9 +530,6 @@ trap cleanup EXIT
 trap 'echo "Script interrupted. Exiting..."; exit 1' SIGINT SIGTERM
 
 main "$@"
-
-
-
 
 #################################################
 ####### AFTER INSTALL
