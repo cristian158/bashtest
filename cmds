@@ -31,12 +31,13 @@ $ cp -rv /source/ /to/destiny                      // copy folder
                                                    // -v verbose
                                                    // -r recursive
 
-$ rsync -vah --dry-run /source                     // list files to copy
+$ rsync -vahz --dry-run /source                     // list files to copy
 
-$ rsync -vahP /source/ /to/destiny/                // -v verbose
+$ rsync -vahzP /source/ /to/destiny/               // -v verbose
                                                    // -a archive (equals to -rlptogD)
                                                    // -r recurse into dirs
                                                    // -h sizes in human-readable format
+                                                   // -z compression (other flags to compression settings)
                                                    // -P progress
         --ignore-existing
         --partial                                  // after interrupted transfer, resume it where it left off
@@ -260,3 +261,13 @@ $ find . -name "*.asd" -type f -delete          // find all asd files in current
                                                 // -type f: files
                                                 // -type d: directories 
 $ find /var/log -size +10M                      // Find files larger than 10 megabytes.
+
+
+
+
+
+
+# outputs 3 defined paragraphs from ca.sh
+nl -ba ca.sh | sed -n '130,180p; 560,590p; 600,640p'
+
+

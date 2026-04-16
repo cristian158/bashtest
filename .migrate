@@ -1,9 +1,29 @@
 #!/usr/bin/env bash
 
 
+
+DOTFILES=$HOME/.files
+
+ git clone --bare https://github.com/cristian158/spweedy $HOME/.cfg 
+ git clone --bare https://github.com/cristian158/spweedy $DOTFILES
+ username
+ password
+
+ alias in .bashrc 
+ source .bashrc 
+ dot checkout 
+
+ untracked thingy
+
+
+
+
+
+
 ##############
 ## MIGRATION
 #
+# https://news.ycombinator.com/item?id=11071754
 #	Original article: https://www.atlassian.com/git/tutorials/dotfiles
 #	DT's Git Bare Repo - A Better Way to Manage Dotfiles
 
@@ -11,7 +31,7 @@
 #
 
 # Error handling
-set -o pipefail
+set -euo pipefail
 BACKUP_DIR="$HOME/.config-backup"
 DOTFILES_DIR="$HOME/.cfg"
 GITHUB_REPO="https://github.com/cristian158/spweedy"
@@ -50,6 +70,10 @@ handle_error() {
     return 1
 }
 
+get_conflicts() {
+    git --git-dir="$DOTFILES_DIR" --work-tree="$HOME" checkout 2>&1 | grep -E '\s+\.' | awk '{print $1}'
+}
+
 # Function to create backup of conflicting files
 backup_conflicting_files() {
     log_info "Checking for conflicting files..."
@@ -58,7 +82,7 @@ backup_conflicting_files() {
     mkdir -p "$BACKUP_DIR" || handle_error "Failed to create backup directory" "exit"
     
     # Get list of conflicting files
-    local conflicts=$(dots checkout 2>&1 | grep -E '\s+\.' | awk '{print $1}')
+    local conflicts=$(get_conflicts)
     
     if [ -z "$conflicts" ]; then
         log_info "No conflicting files found"
@@ -69,7 +93,7 @@ backup_conflicting_files() {
     log_info "Backing up conflicting files to $BACKUP_DIR"
     
     # Backup each conflicting file
-    echo "$conflicts" | while read -r file; do
+    while IFS= read -r file; do
         local dir=$(dirname "$BACKUP_DIR/$file")
         mkdir -p "$dir"
         if mv "$HOME/$file" "$BACKUP_DIR/$file"; then
@@ -77,7 +101,7 @@ backup_conflicting_files() {
         else
             log_warning "Failed to backup: $file"
         fi
-    done
+    done <<< "$conflicts"
     
     log_success "Backup completed"
     return 0
@@ -94,25 +118,20 @@ checkout_dotfiles() {
         log_info "Attempt $attempt of $max_retries"
         
         # Check for untracked files and move them to backup
-        local untracked_files=$(dots status --porcelain | grep '^??' | awk '{print $2}')
-        if [ -n "$untracked_files" ]; then
-            log_info "Found untracked files, moving to backup directory"
-            mkdir -p "$BACKUP_DIR/untracked"
-            echo "$untracked_files" | while read -r file; do
-                if [ -e "$HOME/$file" ]; then
-                    mkdir -p "$BACKUP_DIR/untracked/$(dirname "$file")"
-                    mv "$HOME/$file" "$BACKUP_DIR/untracked/$file"
-                    log_info "Moved untracked file: $file"
-                fi
-            done
+        if git --git-dir="$DOTFILES_DIR" --work-tree="$HOME" status --porcelain | grep '^??' | while IFS= read -r line; do
+            local file=${line#?? }
+            if [ -e "$HOME/$file" ]; then
+                mkdir -p "$BACKUP_DIR/untracked/$(dirname "$file")"
+                mv "$HOME/$file" "$BACKUP_DIR/untracked/$file"
+                log_info "Moved untracked file: $file"
+            fi
+        done; then
+            log_info "Found and moved untracked files"
         fi
 
-        if dots checkout; then
-            log_success "Checkout successful"
-            return 0
-        else
+        local error_output
+        if ! error_output=$(git --git-dir="$DOTFILES_DIR" --work-tree="$HOME" checkout 2>&1); then
             local error_message="Checkout failed"
-            local error_output=$(dots checkout 2>&1)
             
             if echo "$error_output" | grep -q "Authentication failed"; then
                 log_warning "Authentication failed. Please try again."
@@ -122,11 +141,11 @@ checkout_dotfiles() {
             elif echo "$error_output" | grep -q "untracked working tree files"; then
                 log_warning "Found untracked files that would be overwritten by checkout"
                 
-                # Check if we're running in non-interactive mode (from ca.sh AUTO_MODE)
+                # NONINTERACTIVE is set by ca.sh in AUTO_MODE for non-interactive operation
                 if [ -n "${NONINTERACTIVE:-}" ]; then
                     log_info "Running in non-interactive mode, automatically backing up conflicting files"
                     backup_conflicting_files
-                    if dots checkout; then
+                    if git --git-dir="$DOTFILES_DIR" --work-tree="$HOME" checkout; then
                         log_success "Checkout successful after backup"
                         return 0
                     else
@@ -151,8 +170,9 @@ checkout_dotfiles() {
                         ;;
                     2)
                         log_warning "Deleting conflicting files as requested"
-                        local conflicts=$(dots checkout 2>&1 | grep -E '\s+\.' | awk '{print $1}')
-                        echo "$conflicts" | xargs -I{} rm -f "$HOME/{}"
+                        get_conflicts | while IFS= read -r file; do
+                            rm -f "$HOME/$file"
+                        done
                         continue # Retry checkout after deleting conflicts
                         ;;
                     *)
@@ -180,14 +200,6 @@ log_info "Starting migration process"
 if [ -d "$DOTFILES_DIR" ]; then
     log_info "Detected existing dotfiles directory"
     log_info "Using existing dotfiles setup"
-    
-    # Check if dots function is already defined
-    if ! type dots >/dev/null 2>&1; then
-        log_info "Defining dots function"
-        dots() {
-            git --git-dir="$DOTFILES_DIR" --work-tree="$HOME" "$@"
-        }
-    fi
 else
     log_info "Setting up dotfiles from scratch"
     
@@ -197,13 +209,6 @@ else
         handle_error "Failed to clone repository" "exit"
     fi
     log_success "Repository cloned successfully"
-    
-    # Define function in current shell scope
-    dots() {
-        git --git-dir="$DOTFILES_DIR" --work-tree="$HOME" "$@"
-    }
-    
-    log_success "Dots function defined"
 fi
 
 # Checkout dotfiles with proper error handling
@@ -211,16 +216,16 @@ checkout_dotfiles
 
 # Configure git to hide untracked files
 log_info "Configuring git to hide untracked files"
-if ! dots config --local status.showUntrackedFiles no; then
-    handle_error "Failed to configure git" "continue"
+if ! git --git-dir="$DOTFILES_DIR" --work-tree="$HOME" config --local status.showUntrackedFiles no; then
+    handle_error "Failed to configure git"
 fi
 
 # Add function to bashrc if it doesn't exist
 if ! grep -q "dots()" "$HOME/.bashrc"; then
     log_info "Adding dots function to .bashrc"
-    echo "
-    dots() { git --git-dir=\"$DOTFILES_DIR\" --work-tree=\"$HOME\" \"\$@\"; }" >> "$HOME/.bashrc
-    "
+    cat >> "$HOME/.bashrc" << 'EOF'
+dots() { git --git-dir="$DOTFILES_DIR" --work-tree="$HOME" "$@"; }
+EOF
     log_success "Added dots function to .bashrc"
 fi
 

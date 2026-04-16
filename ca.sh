@@ -1,12 +1,5 @@
 #!/bin/bash
 
-## TODO
-## maybe add rmlint and rmlint-shredder (gui)
-## install yt-dlp ripgrep man-pages man-db python-pip rate-mirror (rust)
-## mod batnotify so it kills the noti's once the charger is plugged in
-## add /etc/default/grub (timeout and style), regenerate, etc
-## xorg-xrandr
-
 ## removed the e flag to prevent the script from exiting on errors
 set -uo pipefail
 
@@ -17,12 +10,23 @@ if [ -z "${HOME:-}" ]; then
 fi
 
 USER_HOME=$HOME
-BASHTEST_DIR="$USER_HOME/bashtest"
+SYS_DIR="$USER_HOME/bashtest/sys"
 CONFIG_DIR="$USER_HOME/.config"
-LOG_FILE="$BASHTEST_DIR/script.log"
+LOG_FILE="$SYS_DIR/script.log"
 # AUTO_MODE true --> script run automatically, execute all operations no asking for confirmation
 AUTO_MODE=false
+AUTO_SUDOERS_FILE=""
 TEMP_DIR="/tmp/temp_cash"
+
+# Package groups for installation
+BASE_PACKAGES="base-devel git curl wget"
+WM_UTILITIES="bspwm sxhkd polybar dunst rofi feh picom"
+SYSTEM_UTILITIES="alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance mediainfo mlocate pacman-contrib reflector ripgrep rsync tldr udisks2 aeberzug timeshift rmlint gparted bettercap fzf i3lock-color nmap"
+FILE_MANAGERS="ranger pcmanfm-gtk3 p7zip xarchiver"
+TEXT_EDITORS="neovim vim github-cli"
+MEDIA_TOOLS="mpd ncmpcpp sxiv nsxiv flameshot vlc qpdfview qrencode"
+FONTS_THEMES="ttf-iosevka ttc-iosevka ttf-nerd-fonts-symbols gruvbox-plus-icon-theme"
+SECOND_LAYER="ardour baobab bitwarden brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-ladspa darktable"
 
 # Ensure log directory exists
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
@@ -109,15 +113,18 @@ setup_auto_mode() {
     fi
     
     # Add to sudoers.d
-    if ! sudo cp "$temp_sudoers" "/etc/sudoers.d/99_$current_user"; then
+    AUTO_SUDOERS_FILE="/etc/sudoers.d/99_$current_user"
+    if ! sudo cp "$temp_sudoers" "$AUTO_SUDOERS_FILE"; then
         error "Failed to install sudoers file"
         rm -f "$temp_sudoers"
+        AUTO_SUDOERS_FILE=""
         return 1
     fi
     
     # Set proper permissions
-    if ! sudo chmod 0440 "/etc/sudoers.d/99_$current_user"; then
+    if ! sudo chmod 0440 "$AUTO_SUDOERS_FILE"; then
         error "Failed to set permissions on sudoers file"
+        AUTO_SUDOERS_FILE=""
         return 1
     fi
     
@@ -134,8 +141,7 @@ yes_no() {
     if [ "$AUTO_MODE" = true ]; then
         log "AUTO_MODE: $prompt"
         
-        # In AUTO_MODE, we don't need to worry about sudo for most commands
-        # Just execute the command directly
+        # In AUTO_MODE, continue top to bottom even when a step fails.
         if eval "$action"; then
             log "$prompt - Completed automatically (AUTO_MODE)"
         else
@@ -150,18 +156,19 @@ yes_no() {
             y|yes|"") 
                 if eval "$action"; then
                     log "$prompt - Completed"
+                    return 0
                 else
                     log "$prompt - Failed and continuing..."
+                    return 1
                 fi
                 ;;
             n|no) 
                 log "$prompt - Skipped"
+                return 1
                 ;;
             *) echo "Please answer yes or no."; continue;;
         esac
-        break
     done
-    return 0
 }
 
 # install_yay --noconfirm in AUTO_MODE
@@ -227,21 +234,7 @@ install_yay() {
 }
 
 rangit() {
-	git clone https://github.com/alexanderjeurissen/ranger_devicons \"$CONFIG_DIR/ranger/plugins/ranger_devicons\"
-	
-	ranger --copy-config=all
-	
-	echo "
-        #########################
-        ### Added by CASH 
-
-        default_linemode devicons
-        set preview_images true
-        set preview_images_method ueberzug
-
-        map DD shell mv %s $USER_HOME/.local/share/Trash/files/
-
-        " >> $CONFIG_DIR/ranger/rc.conf
+	git clone https://github.com/alexanderjeurissen/ranger_devicons "$CONFIG_DIR/ranger/plugins/ranger_devicons"
 }
 
 configure_system_files() {
@@ -249,9 +242,10 @@ configure_system_files() {
 
     # Array of file operations: source, destination, description
     declare -A file_ops=(
-        ["$BASHTEST_DIR/nobeep.conf"]="/etc/modprobe.d/nobeep.conf:Disable PC speaker beep"
-        ["$BASHTEST_DIR/30-touchpad.conf"]="/etc/X11/xorg.conf.d/30-touchpad:Touchpad configuration"
-        ["$BASHTEST_DIR/audio_disable_powersave.conf"]="/etc/modprobe.d/audio_disable_powersave.conf:Disable Audio Powersave mode"
+        ["$SYS_DIR/nobeep.conf"]="/etc/modprobe.d/nobeep.conf:Disable PC speaker beep"
+        ["$SYS_DIR/30-touchpad.conf"]="/etc/X11/xorg.conf.d/30-touchpad.conf:Touchpad configuration"
+        ["$SYS_DIR/audio_disable_powersave.conf"]="/etc/modprobe.d/audio_disable_powersave.conf:Disable Audio Powersave mode"
+        ["$SYS_DIR/.Xresources"]="$USER_HOME/.Xresources:Xresources configuration"
     )
 
     for source in "${!file_ops[@]}"; do
@@ -300,7 +294,7 @@ configure_system_files() {
     if [ ! -d "$USER_HOME/00/Pictures" ]; then
         if ! mkdir -p "$USER_HOME/00/Pictures"; then
             error "Failed to create Pictures directory"
-            return 0  
+            return 1  
         fi
     fi
     
@@ -319,6 +313,7 @@ configure_system_files() {
     return 0
 }
 
+# check cause there are 2 batnotify.sh files, they do similar stuff, they are in different folders and the one executed is in .xinitrc
 setup_batnotify() {
     log "Setting up battery monitor"
     
@@ -430,25 +425,101 @@ EOL
 setup_zsh() {
     log "Setting up Zsh and related tools"
     
+    local install_cmd=""
     if [ "$AUTO_MODE" = true ]; then
-        yes_no "Install Zsh" "yay -S --needed --noconfirm zsh"
-        
-        yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.config/powerlevel10k\""
-        
-        yes_no "Install Zsh addons" "yay -S --needed --noconfirm zsh-autosuggestions zsh-syntax-highlighting"
-        
-        # yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
+        install_cmd="yay -S --needed --noconfirm"
     else
-        yes_no "Install Zsh" "yay -S --needed zsh"
-        
-        yes_no "Install Powerlevel10k" "git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$USER_HOME/.config/powerlevel10k\""
-        
-        yes_no "Install Zsh addons" "yay -S --needed zsh-autosuggestions zsh-syntax-highlighting"
-        
-        # yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
+        install_cmd="yay -S --needed"
     fi
     
+    # Pre-check packages
+    local packages_to_install=""
+    for pkg in zsh zsh-autosuggestions zsh-syntax-highlighting; do
+        if ! pacman -Q "$pkg" &>/dev/null; then
+            packages_to_install="$packages_to_install $pkg"
+        fi
+    done
+    
+    # Check Powerlevel10k directory
+    local p10k_dir="$USER_HOME/.config/powerlevel10k"
+    local clone_p10k=false
+    if [ ! -d "$p10k_dir" ]; then
+        clone_p10k=true
+    fi
+    
+    # Unified prompt
+    local action=""
+    if [ -n "$packages_to_install" ] || [ "$clone_p10k" = true ]; then
+        action="if [ -n \"$packages_to_install\" ]; then $install_cmd$packages_to_install; fi"
+        if [ "$clone_p10k" = true ]; then
+            action="$action; git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \"$p10k_dir\""
+        fi
+        yes_no "Set up Zsh and related tools (install packages and clone Powerlevel10k)" "$action"
+    else
+        log "Zsh and related tools are already set up"
+    fi
+    
+    # Uncomment below to set Zsh as default shell
+    # if command -v zsh >/dev/null 2>&1; then
+    #     yes_no "Set Zsh as default shell" "sudo_if_needed chsh -s $(which zsh) $USER"
+    # fi
+    
     log "Zsh setup completed"
+}
+
+setup_themes() {
+    log "Setting up themes and GTK engines"
+    
+    local install_cmd=""
+    if [ "$AUTO_MODE" = true ]; then
+        install_cmd="yay -S --needed --noconfirm"
+    else
+        install_cmd="yay -S --needed"
+    fi
+    
+    # Pre-check GTK engines
+    local engines_to_install=""
+    for pkg in gtk-engine-murrine gtk-engines; do
+        if ! pacman -Q "$pkg" &>/dev/null; then
+            engines_to_install="$engines_to_install $pkg"
+        fi
+    done
+    
+    # Check themes
+    local themes_to_install=""
+    if [ ! -d "/usr/share/themes/Matcha-sea-dark" ]; then
+        themes_to_install="$themes_to_install matcha"
+    fi
+    if [ ! -d "/usr/share/icons/Qogir-manjaro" ]; then
+        themes_to_install="$themes_to_install qogir"
+    fi
+    if [ ! -d "/usr/share/icons/Tela" ]; then
+        themes_to_install="$themes_to_install tela"
+    fi
+    
+    # Build action
+    local action=""
+    if [ -n "$engines_to_install" ]; then
+        action="$install_cmd$engines_to_install"
+    fi
+    if [[ "$themes_to_install" == *"matcha"* ]]; then
+        action="$action; [ ! -d \"$TEMP_DIR/Matcha-gtk-theme\" ] && git clone https://github.com/vinceliuice/Matcha-gtk-theme.git \"$TEMP_DIR/Matcha-gtk-theme\"; (cd \"$TEMP_DIR/Matcha-gtk-theme\" && ./install.sh -c dark -t sea)"
+    fi
+    if [[ "$themes_to_install" == *"qogir"* ]]; then
+        action="$action; [ ! -d \"$TEMP_DIR/Qogir-icon-theme\" ] && git clone https://github.com/vinceliuice/Qogir-icon-theme.git \"$TEMP_DIR/Qogir-icon-theme\"; (cd \"$TEMP_DIR/Qogir-icon-theme\" && ./install.sh -c standard -t manjaro)"
+    fi
+    if [[ "$themes_to_install" == *"tela"* ]]; then
+        action="$action; [ ! -d \"$TEMP_DIR/Tela-icon-theme\" ] && git clone https://github.com/vinceliuice/Tela-icon-theme.git \"$TEMP_DIR/Tela-icon-theme\"; (cd \"$TEMP_DIR/Tela-icon-theme\" && ./install.sh)"
+    fi
+    
+    # Unified prompt
+    if [ -n "$action" ]; then
+        yes_no "Install themes and GTK engines (Matcha GTK, Qogir icons, Tela icons, GTK engines)" "$action"
+    else
+        log "Themes and GTK engines are already installed"
+    fi
+    
+    log "Themes and GTK engines setup completed"
 }
 
 
@@ -457,6 +528,14 @@ cleanup() {
     
     if [ -d "$TEMP_DIR" ]; then
         rm -rf "$TEMP_DIR" || log "Warning: Failed to remove temporary directory"
+    fi
+    
+    if [ -n "$AUTO_SUDOERS_FILE" ] && [ -f "$AUTO_SUDOERS_FILE" ]; then
+        if sudo_if_needed rm -f "$AUTO_SUDOERS_FILE"; then
+            log "Removed temporary sudoers file $AUTO_SUDOERS_FILE"
+        else
+            log "Warning: Failed to remove temporary sudoers file $AUTO_SUDOERS_FILE"
+        fi
     fi
     
     log "Cleanup complete"
@@ -473,14 +552,14 @@ main() {
                 shift
                 ;;
             --help|-h)
-                echo "Usage: $0 [--auto|a] [--help]"
-                echo "  --auto, a    Run in automatic mode (no prompts, passwordless sudo)"
-                echo "  --help, h    Show this help message"
+                echo "Usage: $0 [--auto|-a] [--help]"
+                echo "  --auto, -a    Run in automatic mode (no prompts, passwordless sudo)"
+                echo "  --help, -h    Show this help message"
                 exit 0
                 ;;
             *)
                 error "Unknown option: $1"
-                echo "Usage: $0 [--auto|a] [--help]"
+                echo "Usage: $0 [--auto|-a] [--help]"
                 exit 1
                 ;;
         esac
@@ -501,6 +580,11 @@ main() {
             log "Some operations may fail without sudo privileges"
             yes_no "Continue without sudo privileges?" "true" || exit 1
         fi
+    else
+        # Configure passwordless sudo if in AUTO_MODE and sudo is available
+        if [ "$AUTO_MODE" = true ]; then
+            setup_auto_mode
+        fi
     fi
 
     # Check if running on Arch Linux
@@ -513,8 +597,12 @@ main() {
 
     mkdir -p "$TEMP_DIR" || { error "Failed to create temporary directory"; exit 1; }
     
-    if check_file_exists "$BASHTEST_DIR/pacman.conf"; then
-        yes_no "Configure pacman" "sudo_if_needed cp \"$BASHTEST_DIR/pacman.conf\" \"/etc/pacman.conf\""
+    if check_file_exists "$SYS_DIR/pacman.conf"; then
+        yes_no "Configure pacman" "sudo_if_needed cp \"$SYS_DIR/pacman.conf\" \"/etc/pacman.conf\""
+    fi
+
+    if check_file_exists "$SYS_DIR/makepkg.conf"; then
+        yes_no "Configure makepkg" "sudo_if_needed cp \"$SYS_DIR/makepkg.conf\" \"/etc/makepkg.conf\""
     fi
 
 
@@ -522,50 +610,38 @@ main() {
 #  Add --noconfirm flags to all pacman and yay commands in AUTO_MODE
     # In AUTO_MODE, we'll use --noconfirm for pacman and yay to avoid prompts
     if [ "$AUTO_MODE" = true ]; then
-        yes_no "Perform full system update" "sudo_if_needed pacman -Syu --noconfirm"
-        yes_no "Install Yay" "install_yay"
-
-        # Split package installation into groups with --noconfirm
-        yes_no "Install base packages" "yay -S --needed --noconfirm base-devel git curl wget"
-        yes_no "Install window manager and utilities" "yay -S --needed --noconfirm bspwm sxhkd polybar dunst rofi feh picom"
-        yes_no "Install system utilities" "yay -S --needed --noconfirm alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate ntfs-3g pacman-contrib reflector ripgrep rsync tldr udisks2 ueberzug timeshift rmlint gparted bettercap fzf i3lock-color nmap"
-        yes_no "Install file managers and archivers" "yay -S --needed --noconfirm ranger pcmanfm-gtk3 p7zip xarchiver"
-        yes_no "Install text editors and development tools" "yay -S --needed --noconfirm neovim vim github-cli"
-        yes_no "Install media tools" "yay -S --needed --noconfirm mpd ncmpcpp sxiv nsxiv flameshot vlc qpdfview qrencode "
-        yes_no "Install fonts and themes" "yay -S --needed --noconfirm ttf-iosevka ttc-iosevka ttf-nerd-fonts-symbols gruvbox-plus-icon-theme"
-        yes_no "Install second layer software" "yay -S --needed --noconfirm ardour baobab bitwarden brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-landspa darktable"
+        pacman_cmd="sudo_if_needed pacman -Syu --noconfirm"
+        yay_cmd="yay -S --needed --noconfirm"
     else
-        yes_no "Perform full system update" "sudo_if_needed pacman -Syu"
-        yes_no "Install Yay" "install_yay"
-
-        # Split package installation into groups
-        yes_no "Install base packages" "yay -S --needed base-devel git curl wget"
-        yes_no "Install window manager and utilities" "yay -S --needed bspwm sxhkd polybar dunst rofi feh picom"
-        yes_no "Install system utilities" "yay -S --needed alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance-gtk3 mediainfo mlocate ntfs-3g pacman-contrib reflector ripgrep rsync tldr udisks2 ueberzug timeshift rmlint gparted bettercap fzf i3lock-color nmap"
-        yes_no "Install file managers and archivers" "yay -S --needed ranger pcmanfm-gtk3 p7zip xarchiver"
-        yes_no "Install text editors and development tools" "yay -S --needed neovim vim github-cli"
-        yes_no "Install media tools" "yay -S --needed mpd ncmpcpp sxiv nsxiv flameshot vlc qpdfview qrencode"
-        yes_no "Install fonts and themes" "yay -S --needed ttf-iosevka ttc-iosevka ttf-nerd-fonts-symbols gruvbox-plus-icon-theme"
-        yes_no "Install second layer software" "yay -S --needed ardour baobab bitwarden brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-landspa darktable"
+        pacman_cmd="sudo_if_needed pacman -Syu"
+        yay_cmd="yay -S --needed"
     fi
 
-    yes_no "Install Ranger DevIcons" "rangit"
+    yes_no "Configure system files" "configure_system_files"
+    yes_no "Perform full system update" "$pacman_cmd"
+    yes_no "Install Yay" "install_yay"
+
+    # Split package installation into groups
+    yes_no "Install base packages" "$yay_cmd $BASE_PACKAGES"
+    yes_no "Install window manager and utilities" "$yay_cmd $WM_UTILITIES"
+    yes_no "Install system utilities" "$yay_cmd $SYSTEM_UTILITIES"
+    yes_no "Install file managers and archivers" "$yay_cmd $FILE_MANAGERS"
+    # add rangit as a function to run after 
+    # ideally it would be implicit right after installing 
+    rangit
+    yes_no "Install text editors and development tools" "$yay_cmd $TEXT_EDITORS"
+    # maybe similar thing for nvchad
+    yes_no "Install media tools" "$yay_cmd $MEDIA_TOOLS"
+    yes_no "Install fonts and themes" "$yay_cmd $FONTS_THEMES"
+    yes_no "Install second layer software" "$yay_cmd $SECOND_LAYER"
+
+    # yes_no "Install Ranger DevIcons" "rangit"
     yes_no "Install NvChad" "git clone https://github.com/NvChad/starter \"$CONFIG_DIR/nvim\" --depth 1" # delete .git
-    yes_no "Install Matcha GTK theme" "git clone https://github.com/vinceliuice/Matcha-gtk-theme.git \"$TEMP_DIR/Matcha-gtk-theme\" && (cd \"$TEMP_DIR/Matcha-gtk-theme\" && ./install.sh -c dark -t sea)"
-    yes_no "Install Qogir icon theme" "git clone https://github.com/vinceliuice/Qogir-icon-theme.git \"$TEMP_DIR/Qogir-icon-theme\" && (cd \"$TEMP_DIR/Qogir-icon-theme\" && ./install.sh -c standard -t manjaro)"
-    yes_no "Install Tela icon theme" "git clone https://github.com/vinceliuice/Tela-icon-theme.git \"$TEMP_DIR/Tela-icon-theme\" && (cd \"$TEMP_DIR/Tela-icon-theme\" && ./install.sh)"
-
-    # Add --noconfirm flag to GTK engines installation in AUTO_MODE
-    if [ "$AUTO_MODE" = true ]; then
-        yes_no "Install GTK engines" "yay -S --needed --noconfirm gtk-engine-murrine gtk-engines"
-    else
-        yes_no "Install GTK engines" "yay -S --needed gtk-engine-murrine gtk-engines"
-    fi
+    setup_themes
 
     # Setup Zsh and related tools
     setup_zsh
 
-    yes_no "Configure system files" "configure_system_files"
     yes_no "Setup battery monitor" "setup_batnotify"
 
     # Add flag file to indicate ca.sh completion
@@ -591,3 +667,44 @@ main "$@"
 #################################################
 ####### AFTER INSTALL
 ## check /etc/passwd for right shell to user
+
+
+######### TO CHECK
+## batnotify moved to .files/scripts/ as a bash, it is ready and executed fomr
+
+
+
+
+# Add a check when building yay so the required base-devel and network-manager-applet are installed before.
+# Propose a function that checks the expected system file /etc/pacman.conf so the following lines are present and uncommented:
+# - ILoveCandy
+# - Color
+# - ParallelDownloads = 10
+# 
+# Add command that keeps the sudo priviliges til the script ends or gets interrupted (crash, ctrl+c, etc) 
+# 
+# make a function that checks if the script has already been run and if so, skip the steps that have already been done (like cloning the dotfiles repo, defining the dots function, etc) and just do the necessary steps to get to the same state as if it was run for the first time (like checking out the dotfiles, configuring git, etc). This way, if the script gets interrupted or fails at some point, you can just run it again and it will pick up where it left off without causing issues or requiring manual cleanup.
+#
+#
+# in AUTO MODE it still asks for password twice when making yay, have to run the script as root
+#
+#   yes_no "Continue without sudo?" "true" || exit 1 (line 502)
+#   yes_no always returns 0, so || exit 1 is unreachable. If the user answers "no", the script keeps running anyway — the intent to exit is silently lost.
+#
+#   Security        
+#   eval "$action" in yes_no (lines 139, 151)
+#   This is risky. Passing multi-word commands as strings and running them through eval makes the code fragile and potentially exploitable if any input paths contain special characters. A common safer pattern is to pass function names and call them directly, or use arrays with   
+#   "${cmd[@]}".                                                                         
+#   setup_auto_mode writes NOPASSWD: ALL to /etc/sudoers.d/                     
+#   The file is never cleaned up after the script ends, permanently granting passwordless sudo. Worth at least noting in a comment, or adding cleanup via the trap.
+#                                                                                                                                               
+#   Minor / TODOs Already Noted
+#   - setup_auto_mode cleanup not trapped on exit
+#   - The TODO about killing battery notifications on charger plug-in is a real gap — the batnotify.sh only checks Discharging status but never suppresses an existing notification    
+#   - chsh lines are commented out — if intentional, they could just be removed                                                                                                                                                                   
+
+## maybe add rmlint and rmlint-shredder (gui)
+## install yt-dlp ripgrep man-pages man-db python-pip rate-mirror (rust)
+## mod batnotify so it kills the noti's once the charger is plugged in
+## add /etc/default/grub (timeout and style), regenerate, etc
+## xorg-xrandr
