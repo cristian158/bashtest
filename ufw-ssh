@@ -1,0 +1,36 @@
+
+
+makepkg.conf
+pacman.conf
+
+
+
+## check ip address, enp1s0, inet
+  $ ip a
+
+
+## enable and start sshd service
+  $ systemctl enable sshd 
+  $ systemctl start sshd 
+
+
+## check ufw
+  $ sudo ufw status
+
+
+## don't allow ssh on my main machine until i need it
+## allow ssh 
+  $ sudo ufw allow ssh 
+  $ sudo ufw show added 
+
+
+
+
+
+## ss utility to investigate sockets
+## -t: TCP sockets 
+## -u: UPD sockets 
+## -n: exact bandwidth values
+## -l: listening sockets
+## -p: show processes using sockets 
+  $ sudo ss -tunlp
