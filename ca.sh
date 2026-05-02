@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ## removed the e flag to prevent the script from exiting on errors
 set -uo pipefail
@@ -26,7 +26,7 @@ FILE_MANAGERS="ranger pcmanfm-gtk3 p7zip xarchiver"
 TEXT_EDITORS="neovim vim github-cli"
 MEDIA_TOOLS="mpd ncmpcpp sxiv nsxiv flameshot vlc qpdfview qrencode"
 FONTS_THEMES="ttf-iosevka ttc-iosevka ttf-nerd-fonts-symbols gruvbox-plus-icon-theme"
-SECOND_LAYER="ardour baobab bitwarden brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-ladspa darktable"
+SECOND_LAYER="ardour baobab bitwarden bitwarden-cli brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-ladspa darktable"
 
 # Ensure log directory exists
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
