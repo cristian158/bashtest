@@ -21,8 +21,8 @@ TEMP_DIR="/tmp/temp_cash"
 # Package groups for installation
 BASE_PACKAGES="base-devel git curl wget"
 WM_UTILITIES="bspwm sxhkd polybar dunst rofi feh picom"
-SYSTEM_UTILITIES="alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance mediainfo mlocate pacman-contrib reflector ripgrep rsync tldr udisks2 aeberzug timeshift rmlint gparted bettercap fzf i3lock-color nmap"
-FILE_MANAGERS="ranger pcmanfm-gtk3 p7zip xarchiver"
+SYSTEM_UTILITIES="alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance mediainfo mlocate pacman-contrib reflector ripgrep rsync tldr udisks2 aeberzug timeshift rmlint gparted bettercap fzf i3lock-color nmap auto-cpufreq"
+FILE_MANAGERS="ranger pcmanfm-gtk3 p7zip xarchiver ueberzugpp"
 TEXT_EDITORS="neovim vim github-cli"
 MEDIA_TOOLS="mpd ncmpcpp sxiv nsxiv flameshot vlc qpdfview qrencode"
 FONTS_THEMES="ttf-iosevka ttc-iosevka ttf-nerd-fonts-symbols gruvbox-plus-icon-theme"
@@ -606,7 +606,6 @@ main() {
     fi
 
 
-# tlp or auto-cpufreq
 #  Add --noconfirm flags to all pacman and yay commands in AUTO_MODE
     # In AUTO_MODE, we'll use --noconfirm for pacman and yay to avoid prompts
     if [ "$AUTO_MODE" = true ]; then

@@ -149,6 +149,8 @@ $ mtr archlinux.org                              // investigate net connex; mixe
 
 $ curl -F "file=@filename.foo" 0x0.st            // cloud storage
 
+$ nmap -A -T4 192.168.1.158
+
 
 ##################
 ###   KERNEL   ###
@@ -204,7 +206,11 @@ $ git commit -m "whatever..." || echo "Commit failed" // conditional execution
 $ grep 'string' directory-path/*.*              // find 'string' in all files of
                                                 // directory-path/
 
+
+
 $ pstree                                        // show processes currently running on system
+
+$ watch -c -n 1 sudo virsh list --all           // exe virsh every sec 
 
 $ sudo loadkeys -d                              // change keyboard layout to default
 
@@ -231,6 +237,19 @@ du -sh /* 2>/dev/null | sort -rh | head -10     // everything under root
                                                 // 2>/dev/null hides permission errors 
                                                 // sort by bigger size human readable 
                                                 // takes first 10 files 
+
+
+### record terminal session
+  $ script session.log 
+    script started
+    > ls 
+    > touch random.py 
+    > exit
+    script done
+
+# renames all current directory files except for pdf, changes extension to .md
+❯ for f in *; do [ -f "$f" ] && [ "${f##*.}" != "pdf" ] && mv "$f" "$f.md"; done
+
 
 
 #######################

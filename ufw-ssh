@@ -1,8 +1,6 @@
 
-
 makepkg.conf
 pacman.conf
-
 
 
 ## check ip address, enp1s0, inet
@@ -22,9 +20,6 @@ pacman.conf
 ## allow ssh 
   $ sudo ufw allow ssh 
   $ sudo ufw show added 
-
-
-
 
 
 ## ss utility to investigate sockets
