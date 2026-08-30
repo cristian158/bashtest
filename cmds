@@ -22,7 +22,8 @@ $ mkdir -p dir2/folders{1,2}                      // create subirs folders1 and 
 ###   VIM    ###
 ################
 
-:w !sudo tee %					  // writes file w/elevated privileges. It asks for as terminal, can't do it
+:w !sudo tee %					                           // writes file w/elevated privileges. It asks for as terminal, can't do it
+:%s/<pattern>/<replacement>/g                      // replace all instances
 
 
 ################
@@ -117,6 +118,7 @@ $ inxi -Na					                     // -N network devices, driver
 $ mhwd						                       // display & network controllers
 
 ## BATTERY
+$ upower -d
 $ upower -i /org/freedesktop/UPower/devices/battery_BAT0 
 $ upower -i `upower -e | grep 'BAT'`
 $ upower -i $(upower -e | grep BAT) | grep -E "state|to\ full|to\ empty|percentage"
@@ -285,6 +287,12 @@ $ tar -czf backup.tar.gz /home/ravi/documents
 $ ls -lh /home/ravi/documents
 
 
+### batch crop picture with gmagick
+$ for f in *.webp; do gm convert "$f" -crop 790x992+565+14 +repage "${f%.webp}-a.webp"; done
+
+## Clock 
+$ while true; do printf '%s\r' "$(date)"; done
+
 ###############################################################################################################################
 
 #####################
@@ -314,3 +322,6 @@ gpg: keyserver receive failed: No dirmngr
 
 ### create gnupg folder 
 mkdir .local/share/gnupg    
+
+
+
