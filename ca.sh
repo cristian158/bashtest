@@ -21,12 +21,13 @@ TEMP_DIR="/tmp/temp_cash"
 # Package groups for installation
 BASE_PACKAGES="base-devel git curl wget"
 WM_UTILITIES="bspwm sxhkd polybar dunst rofi feh picom"
-SYSTEM_UTILITIES="alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance mediainfo mlocate pacman-contrib reflector ripgrep rsync tldr udisks2 aeberzug timeshift rmlint gparted bettercap fzf i3lock-color nmap auto-cpufreq"
+SYSTEM_UTILITIES="alacritty alsa-utils bluez bluez-utils network-manager-applet xclip ufw android-file-transfer android-udev ntfs-3g btop fastfetch gvfs gvfs-mtp hblock libnotify lsd lxappearance mediainfo mlocate pacman-contrib reflector ripgrep rsync tldr udisks2 aeberzug timeshift rmlint gparted bettercap fzf i3lock-color nmap auto-cpufreq ncdu inxi"
 FILE_MANAGERS="ranger pcmanfm-gtk3 p7zip xarchiver ueberzugpp"
 TEXT_EDITORS="neovim vim github-cli"
 MEDIA_TOOLS="mpd ncmpcpp sxiv nsxiv flameshot vlc qpdfview qrencode"
+VIRT_TOOLS="qemu-full libvirt virt-manager virt-install dnsmasq edk2-ovmf bridge-utils"
 FONTS_THEMES="ttf-iosevka ttc-iosevka ttf-nerd-fonts-symbols gruvbox-plus-icon-theme"
-SECOND_LAYER="ardour baobab bitwarden bitwarden-cli brave-bin calf cursor-bin docker-desktop gimp handbrake inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-ladspa darktable"
+SECOND_LAYER="ardour baobab bitwarden bitwarden-cli mullvad-browser-bin calf cursor-bin gimp inkscape kdenlive nicotine qbittorrent okular bleachbit tenacity gstreamer visual-studio-code-bin lsp-plugins-ladspa darktable sonic-pi"
 
 # Ensure log directory exists
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
@@ -631,6 +632,7 @@ main() {
     yes_no "Install text editors and development tools" "$yay_cmd $TEXT_EDITORS"
     # maybe similar thing for nvchad
     yes_no "Install media tools" "$yay_cmd $MEDIA_TOOLS"
+    yes_no "Install virtualization tools" "$yay_cmd $VIRT_TOOLS"
     yes_no "Install fonts and themes" "$yay_cmd $FONTS_THEMES"
     yes_no "Install second layer software" "$yay_cmd $SECOND_LAYER"
 
@@ -705,5 +707,3 @@ main "$@"
 ## maybe add rmlint and rmlint-shredder (gui)
 ## install yt-dlp ripgrep man-pages man-db python-pip rate-mirror (rust)
 ## mod batnotify so it kills the noti's once the charger is plugged in
-## add /etc/default/grub (timeout and style), regenerate, etc
-## xorg-xrandr
